@@ -1,0 +1,104 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  avatar_url String?
+  bio       String?
+  coins     Int      @default(100)
+  rating    Float    @default(5.0)
+  role      String   @default("user")  // "user" or "admin"
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  listings    Listing[]
+  trades_initiated Trade[] @relation("trades_initiator")
+  trades_received  Trade[] @relation("trades_responder")
+  coin_transactions CoinTransaction[]
+
+  @@index([email])
+  @@index([username])
+  @@index([role])
+}
+
+model Listing {
+  id           String   @id @default(cuid())
+  owner_id     String
+  owner        Profile  @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  
+  title        String
+  description  String   @db.Text
+  category     String
+  image_url    String?
+  is_service   Boolean  @default(false)
+  status       ListingStatus @default(ACTIVE)
+  
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  trades       Trade[]
+
+  @@index([owner_id])
+  @@index([category])
+  @@index([status])
+}
+
+model Trade {
+  id                 String   @id @default(cuid())
+  initiator_id       String
+  initiator          Profile  @relation("trades_initiator", fields: [initiator_id], references: [id], onDelete: Cascade)
+  
+  responder_id       String
+  responder          Profile  @relation("trades_responder", fields: [responder_id], references: [id], onDelete: Cascade)
+  
+  listing_id         String
+  listing            Listing  @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+  
+  proposed_listing_id String?
+  coin_amount        Int      @default(0)
+  message            String?  @db.Text
+  
+  status             TradeStatus @default(PENDING)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  @@index([initiator_id])
+  @@index([responder_id])
+  @@index([listing_id])
+  @@index([status])
+}
+
+model CoinTransaction {
+  id        String   @id @default(cuid())
+  user_id   String
+  user      Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  amount    Int
+  reason    String
+  created_at DateTime @default(now())
+
+  @@index([user_id])
+}
+
+enum ListingStatus {
+  ACTIVE
+  TRADED
+  ARCHIVED
+}
+
+enum TradeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
