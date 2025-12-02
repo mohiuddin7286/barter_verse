@@ -1,44 +1,33 @@
-import express, { Express } from "express";
-import cors from "cors";
-import helmet from "helmet";
-import authRouter from "@/routes/auth.routes";
-import adminRouter from "@/routes/admin.routes";
-import listingsRouter from "@/routes/listings.routes";
-import coinsRouter from "@/routes/coins.routes";
-import tradesRouter from "@/routes/trades.routes";
-import { errorMiddleware } from "@/middleware/error.middleware";
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import { errorHandler } from './middleware/error.middleware';
 
-export const createApp = (): Express => {
-  const app = express();
+import authRoutes from './routes/auth.routes';
+import tradesRoutes from './routes/trades.routes';
+import coinsRoutes from './routes/coins.routes';
+import adminRoutes from './routes/admin.routes';
 
-  // Middleware
-  app.use(helmet());
-  app.use(cors());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+export const app = express();
 
-  // Health check
-  app.get("/health", (_req, res) => {
-    res.json({ success: true, message: "Server is running" });
-  });
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
+app.use(morgan('dev'));
 
-  // API Routes
-  app.use("/api/auth", authRouter);
-  app.use("/api/admin", adminRouter);
-  app.use("/api/listings", listingsRouter);
-  app.use("/api/coins", coinsRouter);
-  app.use("/api/trades", tradesRouter);
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true });
+});
 
-  // 404 handler
-  app.use((_req, res) => {
-    res.status(404).json({
-      success: false,
-      error: "Route not found",
-    });
-  });
+app.use('/api/auth', authRoutes);
+app.use('/api/trades', tradesRoutes);
+app.use('/api/coins', coinsRoutes);
+app.use('/api/admin', adminRoutes);
 
-  // Error handling middleware (must be last)
-  app.use(errorMiddleware);
-
-  return app;
-};
+app.use(errorHandler);

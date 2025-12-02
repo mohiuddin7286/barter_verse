@@ -1,86 +1,49 @@
-import { Request, Response, NextFunction } from "express";
-import { AppError } from "./error.middleware";
-import { authService } from "@/services/auth.service";
-import { prisma } from "@/prisma/client";
+import { Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../prisma/client';
+import { AuthRequest, JwtPayload } from '../types';
 
-// Extend Express Request to include userId and userRole
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-      userRole?: string;
-    }
-  }
-}
-
-export const authMiddleware = (
-  req: Request,
-  _res: Response,
+export const authRequired = async (
+  req: AuthRequest,
+  res: Response,
   next: NextFunction
 ) => {
-  try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new AppError(401, "Missing or invalid authorization header");
-    }
+  const header = req.headers.authorization;
+  const token = header?.startsWith('Bearer ')
+    ? header.slice(7)
+    : undefined;
 
-    const token = authHeader.substring(7);
-    
-    // Verify token and extract userId
-    req.userId = authService.verifyToken(token);
-
-    if (!req.userId) {
-      throw new AppError(401, "User ID not found in token");
-    }
-
-    next();
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError(401, "Authentication failed");
+  if (!token) {
+    return res.status(401).json({ message: 'Not authenticated' });
   }
-};
 
-export const adminMiddleware = async (
-  req: Request,
-  _res: Response,
-  next: NextFunction
-) => {
   try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new AppError(401, "Missing or invalid authorization header");
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('Missing JWT_SECRET');
     }
 
-    const token = authHeader.substring(7);
-    
-    // Verify token and extract userId
-    req.userId = authService.verifyToken(token);
+    const decoded = jwt.verify(token, secret) as JwtPayload;
 
-    if (!req.userId) {
-      throw new AppError(401, "User ID not found in token");
-    }
-
-    // Check if user is admin
     const user = await prisma.profile.findUnique({
-      where: { id: req.userId },
-      select: { role: true },
+      where: { id: decoded.id },
     });
 
     if (!user) {
-      throw new AppError(404, "User not found");
+      return res.status(401).json({ message: 'User not found' });
     }
 
-    if (user.role !== "admin") {
-      throw new AppError(403, "Admin access required");
-    }
-
-    req.userRole = user.role;
+    req.user = user;
     next();
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    console.error('authRequired error:', err);
+    res.status(401).json({ message: 'Invalid or expired token' });
   }
+};
+
+export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Admin only' });
+  }
+  next();
 };

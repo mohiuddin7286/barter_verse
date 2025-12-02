@@ -1,129 +1,41 @@
-import { Request, Response, NextFunction } from "express";
-import {
-  CoinsService,
-  spendCoinsSchema,
-  addCoinsSchema,
-} from "@/services/coins.service";
-import { AppError } from "@/middleware/error.middleware";
-import { ApiResponse } from "@/types/index";
+import { Response, NextFunction } from 'express';
+import { AuthRequest } from '../types';
+import { prisma } from '../prisma/client';
 
-const coinsService = new CoinsService();
+export const getMyCoins = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Unauthenticated' });
 
-export class CoinsController {
-  async getBalance(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
+    const user = await prisma.profile.findUnique({
+      where: { id: req.user.id },
+      select: { coins: true },
+    });
 
-      const balance = await coinsService.getBalance(userId);
-
-      res.status(200).json({
-        success: true,
-        data: { balance },
-      });
-    } catch (error) {
-      next(error);
-    }
+    res.json({ coins: user?.coins ?? 0 });
+  } catch (err) {
+    next(err);
   }
+};
 
-  async addCoins(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
+export const getMyCoinTransactions = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Unauthenticated' });
 
-      const validatedData = addCoinsSchema.parse(req.body);
-      const result = await coinsService.addCoins(
-        userId,
-        validatedData.amount,
-        validatedData.reason
-      );
+    const txs = await prisma.coinTransaction.findMany({
+      where: { user_id: req.user.id },
+      orderBy: { created_at: 'desc' },
+    });
 
-      res.status(200).json({
-        success: true,
-        data: result,
-        message: "Coins added successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
+    res.json(txs);
+  } catch (err) {
+    next(err);
   }
-
-  async spendCoins(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const validatedData = spendCoinsSchema.parse(req.body);
-      const result = await coinsService.spendCoins(
-        userId,
-        validatedData.amount,
-        validatedData.reason
-      );
-
-      res.status(200).json({
-        success: true,
-        data: result,
-        message: "Coins spent successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getTransactionHistory(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const limit = parseInt(req.query.limit as string) || 50;
-      const transactions = await coinsService.getTransactionHistory(userId, limit);
-
-      res.status(200).json({
-        success: true,
-        data: transactions,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async transferCoins(req: Request, res: Response, next: NextFunction) {
-    try {
-      const fromUserId = req.userId;
-      if (!fromUserId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const { toUserId, amount, reason } = req.body;
-
-      if (!toUserId || !amount || !reason) {
-        throw new AppError(400, "toUserId, amount, and reason are required");
-      }
-
-      const result = await coinsService.transferCoins(
-        fromUserId,
-        toUserId,
-        amount,
-        reason
-      );
-
-      res.status(200).json({
-        success: true,
-        data: result,
-        message: "Coins transferred successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-}
-
-export const coinsController = new CoinsController();
+};

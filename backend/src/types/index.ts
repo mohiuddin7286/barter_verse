@@ -1,21 +1,11 @@
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
+import { Request } from 'express';
+import { Profile } from '@prisma/client';
+
+export interface AuthRequest extends Request {
+  user?: Profile;
 }
 
-export interface PaginationQuery {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-}
-
-export interface AuthRequest {
-  userId: string;
-  user?: {
-    id: string;
-    email: string;
-  };
+export interface JwtPayload {
+  id: string;
+  role: string;
 }

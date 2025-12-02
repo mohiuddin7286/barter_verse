@@ -1,131 +1,76 @@
-import { Request, Response, NextFunction } from "express";
-import {
-  TradesService,
-  createTradeSchema,
-  confirmTradeSchema,
-} from "@/services/trades.service";
-import { AppError } from "@/middleware/error.middleware";
-import { ApiResponse } from "@/types/index";
+import { Response, NextFunction } from 'express';
+import { AuthRequest } from '../types';
+import { prisma } from '../prisma/client';
 
-const tradesService = new TradesService();
-
-export class TradesController {
-  async createTrade(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const validatedData = createTradeSchema.parse(req.body);
-      const trade = await tradesService.createTrade(userId, validatedData);
-
-      res.status(201).json({
-        success: true,
-        data: trade,
-        message: "Trade created successfully",
-      } as ApiResponse<typeof trade>);
-    } catch (error) {
-      next(error);
+export const getMyTrades = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthenticated' });
     }
+
+    const trades = await prisma.trade.findMany({
+      where: {
+        OR: [
+          { initiator_id: req.user.id },
+          { responder_id: req.user.id },
+        ],
+      },
+      include: {
+        initiator: { select: { id: true, username: true } },
+        responder: { select: { id: true, username: true } },
+        listing: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            image_url: true,
+          },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    res.json(trades);
+  } catch (err) {
+    next(err);
   }
+};
 
-  async getTrades(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const type = (req.query.type as "incoming" | "outgoing") || "incoming";
-      const trades = await tradesService.getTrades(userId, type);
-
-      res.status(200).json({
-        success: true,
-        data: trades,
-      } as ApiResponse<typeof trades>);
-    } catch (error) {
-      next(error);
+export const createTrade = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthenticated' });
     }
+
+    const {
+      responder_id,
+      listing_id,
+      proposed_listing_id,
+      coin_amount,
+      message,
+    } = req.body;
+
+    const trade = await prisma.trade.create({
+      data: {
+        initiator_id: req.user.id,
+        responder_id,
+        listing_id,
+        proposed_listing_id,
+        coin_amount: coin_amount ?? 0,
+        message,
+      },
+    });
+
+    res.status(201).json(trade);
+  } catch (err) {
+    next(err);
   }
-
-  async getTradeById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const trade = await tradesService.getTradeById(id);
-
-      res.status(200).json({
-        success: true,
-        data: trade,
-      } as ApiResponse<typeof trade>);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async confirmTrade(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const { id } = req.params;
-      const validatedData = confirmTradeSchema.parse(req.body);
-      const trade = await tradesService.confirmTrade(
-        id,
-        userId,
-        validatedData.accepted
-      );
-
-      res.status(200).json({
-        success: true,
-        data: trade,
-        message: `Trade ${validatedData.accepted ? "accepted" : "rejected"} successfully`,
-      } as ApiResponse<typeof trade>);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async completeTrade(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const { id } = req.params;
-      const trade = await tradesService.completeTrade(id, userId);
-
-      res.status(200).json({
-        success: true,
-        data: trade,
-        message: "Trade completed successfully",
-      } as ApiResponse<typeof trade>);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async cancelTrade(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        throw new AppError(401, "User ID is required");
-      }
-
-      const { id } = req.params;
-      await tradesService.cancelTrade(id, userId);
-
-      res.status(200).json({
-        success: true,
-        message: "Trade cancelled successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-}
-
-export const tradesController = new TradesController();
+};
