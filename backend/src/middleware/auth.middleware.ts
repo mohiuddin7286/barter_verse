@@ -34,6 +34,9 @@ export const authRequired = async (
     }
 
     req.user = user;
+    // convenience properties used across controllers
+    req.userId = user.id;
+    req.userRole = user.role;
     next();
   } catch (err) {
     console.error('authRequired error:', err);

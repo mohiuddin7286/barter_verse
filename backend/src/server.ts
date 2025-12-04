@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { app } from './app';
+// Import compiled JS file path so Node ESM can resolve it after build
+import { app } from './app.js';
 
 const PORT = Number(process.env.PORT) || 5000;
 

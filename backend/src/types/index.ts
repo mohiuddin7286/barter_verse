@@ -9,3 +9,10 @@ export interface JwtPayload {
   id: string;
   role: string;
 }
+
+export type ApiResponse<T = any> = {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+};

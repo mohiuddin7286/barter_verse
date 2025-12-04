@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import { errorHandler } from './middleware/error.middleware';
+import { errorHandler } from './middleware/error.middleware.js';
 
-import authRoutes from './routes/auth.routes';
-import tradesRoutes from './routes/trades.routes';
-import coinsRoutes from './routes/coins.routes';
-import adminRoutes from './routes/admin.routes';
+import authRoutes from './routes/auth.routes.js';
+import tradesRoutes from './routes/trades.routes.js';
+import coinsRoutes from './routes/coins.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 export const app = express();
 
