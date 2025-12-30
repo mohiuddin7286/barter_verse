@@ -3,9 +3,9 @@ import {
   ListingsService,
   createListingSchema,
   updateListingSchema,
-} from "@/services/listings.service";
-import { AppError } from "@/middleware/error.middleware";
-import { ApiResponse } from "@/types/index";
+} from "../services/listings.service";
+import { AppError } from "../middleware/error.middleware";
+import { ApiResponse } from "../types/index";
 
 const listingsService = new ListingsService();
 

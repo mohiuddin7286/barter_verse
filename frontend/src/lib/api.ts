@@ -73,31 +73,32 @@ class ApiClient {
   }
 
   // Coins endpoints
-  async getBalance(userId: string) {
-    return this.client.get(`/coins/balance/${userId}`);
+  // Coins endpoints (backend uses auth, so no userId param required)
+  async getBalance() {
+    return this.client.get('/coins');
   }
 
-  async addCoins(userId: string, amount: number, reason?: string) {
-    return this.client.post('/coins/add', { userId, amount, reason });
+  async addCoins(amount: number, reason?: string) {
+    return this.client.post('/coins/add', { amount, reason });
   }
 
-  async spendCoins(userId: string, amount: number, reason?: string) {
-    return this.client.post('/coins/spend', { userId, amount, reason });
+  async spendCoins(amount: number, reason?: string) {
+    return this.client.post('/coins/spend', { amount, reason });
   }
 
-  async transferCoins(fromUserId: string, toUserId: string, amount: number) {
-    return this.client.post('/coins/transfer', { fromUserId, toUserId, amount });
+  async transferCoins(toUserId: string, amount: number) {
+    return this.client.post('/coins/transfer', { toUserId, amount });
   }
 
-  async getTransactionHistory(userId: string, limit = 50) {
-    return this.client.get(`/coins/history/${userId}`, { params: { limit } });
+  async getTransactionHistory(limit = 50) {
+    return this.client.get('/coins/transactions', { params: { limit } });
   }
 
   // Trades endpoints
-  async getTrades(userId: string, direction?: 'incoming' | 'outgoing') {
+  async getTrades(direction?: 'incoming' | 'outgoing') {
     const params: any = {};
     if (direction) params.direction = direction;
-    return this.client.get(`/trades/${userId}`, { params });
+    return this.client.get('/trades', { params });
   }
 
   async getTradeById(id: string) {

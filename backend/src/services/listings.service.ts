@@ -1,6 +1,6 @@
-import { prisma } from "@/prisma/client";
+import { prisma } from "../prisma/client";
 import { Listing, ListingStatus } from "@prisma/client";
-import { AppError } from "@/middleware/error.middleware";
+import { AppError } from "../middleware/error.middleware";
 import { z } from "zod";
 
 export const createListingSchema = z.object({

@@ -20,6 +20,7 @@ import Community from "./pages/Community";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                         <Route path="/skill-share" element={<SkillShare />} />
                         <Route path="/community" element={<Community />} />
                         <Route path="/analytics" element={<Analytics />} />
+                        <Route path="/admin" element={<Admin />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>

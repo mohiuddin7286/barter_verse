@@ -1,5 +1,5 @@
-import { prisma } from "@/prisma/client";
-import { AppError } from "@/middleware/error.middleware";
+import { prisma } from "../prisma/client";
+import { AppError } from "../middleware/error.middleware";
 
 export const adminService = {
   getAllUsers: async () => {

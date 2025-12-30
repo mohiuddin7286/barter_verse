@@ -18,8 +18,29 @@ export const signup = async (req: Request, res: Response) => {
   try {
     const { email, username, password } = req.body;
 
-    if (!email || !username || !password) {
-      return res.status(400).json({ message: 'All fields required' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    // If frontend did not provide a username, derive one from the email
+    let finalUsername = username;
+    if (!finalUsername) {
+      const base = email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'user';
+      finalUsername = base;
+      
+      // Ensure uniqueness by appending timestamp if needed
+      let i = 0;
+      while (i < 100) { // Limit to 100 attempts
+        const existing = await prisma.profile.findUnique({ where: { username: finalUsername } });
+        if (!existing) break; // Username is free, use it
+        i += 1;
+        finalUsername = `${base}${i}`;
+      }
+      
+      // If still colliding after 100 attempts, add random suffix
+      if (i >= 100) {
+        finalUsername = `${base}_${Date.now()}`;
+      }
     }
 
     const existingEmail = await prisma.profile.findUnique({ where: { email } });
@@ -27,32 +48,19 @@ export const signup = async (req: Request, res: Response) => {
       return res.status(409).json({ message: 'Email already in use' });
     }
 
-    const existingUsername = await prisma.profile.findUnique({ where: { username } });
-    if (existingUsername) {
-      return res.status(409).json({ message: 'Username already in use' });
-    }
-
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await prisma.profile.create({
       data: {
         email,
-        username,
+        username: finalUsername,
         password: hashed,
-        // coins default = 100, rating=5.0, role="user"
       },
     });
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '7d' });
 
-    res.status(201).json({
-      token,
-      user: buildUserPayload(user),
-    });
+    res.status(201).json({ data: { token, user: buildUserPayload(user) } });
   } catch (err: any) {
     console.error('signup error:', err);
     res.status(500).json({ message: 'Signup failed' });
@@ -61,17 +69,15 @@ export const signup = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { emailOrUsername, password } = req.body;
+    // Support both `{ emailOrUsername, password }` and `{ email, password }` payloads
+    const { emailOrUsername, email, username, password } = req.body;
+    const identifier = emailOrUsername ?? email ?? username;
 
-    if (!emailOrUsername || !password) {
-      return res.status(400).json({ message: 'All fields required' });
+    if (!identifier || !password) {
+      return res.status(400).json({ message: 'Email/username and password are required' });
     }
 
-    const user = await prisma.profile.findFirst({
-      where: {
-        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
-      },
-    });
+    const user = await prisma.profile.findFirst({ where: { OR: [{ email: identifier }, { username: identifier }] } });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -82,16 +88,9 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '7d' });
 
-    res.json({
-      token,
-      user: buildUserPayload(user),
-    });
+    res.json({ data: { token, user: buildUserPayload(user) } });
   } catch (err) {
     console.error('login error:', err);
     res.status(500).json({ message: 'Login failed' });
@@ -122,7 +121,7 @@ export const me = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({ user: buildUserPayload(user) });
+    res.json({ data: { user: buildUserPayload(user) } });
   } catch (err) {
     console.error('me error:', err);
     res.status(401).json({ message: 'Invalid token' });

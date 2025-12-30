@@ -1,5 +1,5 @@
-import { prisma } from "@/prisma/client";
-import { AppError } from "@/middleware/error.middleware";
+import { prisma } from "../prisma/client";
+import { AppError } from "../middleware/error.middleware";
 import { z } from "zod";
 
 export const spendCoinsSchema = z.object({
@@ -148,7 +148,7 @@ export class CoinsService {
     // Transfer coins
     const transferReason = `Transfer: ${reason}`;
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const updated = await tx.profile.update({
         where: { id: fromUserId },
         data: { coins: { decrement: amount } },

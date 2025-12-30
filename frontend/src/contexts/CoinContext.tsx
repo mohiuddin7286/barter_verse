@@ -40,10 +40,11 @@ export function CoinProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await Promise.race([
-        api.getBalance(user.id),
+        api.getBalance(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
       ]);
-      setBalance(response.data.data?.balance || 0);
+      // backend returns { coins: number }
+      setBalance(response.data?.coins ?? 0);
     } catch (error) {
       console.error('Error fetching balance:', error);
       setBalance(0);
@@ -56,8 +57,8 @@ export function CoinProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
-      const response = await api.getTransactionHistory(user.id, 50);
-      setTransactions(response.data.data || []);
+      const response = await api.getTransactionHistory(50);
+      setTransactions(response.data?.data || response.data || []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
       setTransactions([]);
@@ -68,8 +69,8 @@ export function CoinProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
 
     try {
-      const response = await api.addCoins(user.id, amount, reason);
-      setBalance(response.data.data?.new_balance || 0);
+      const response = await api.addCoins(amount, reason);
+      setBalance(response.data?.data?.new_balance || response.data?.new_balance || 0);
       await fetchTransactions();
       toast({
         title: 'Success',
@@ -91,8 +92,8 @@ export function CoinProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
 
     try {
-      const response = await api.spendCoins(user.id, amount, reason);
-      setBalance(response.data.data?.new_balance || 0);
+      const response = await api.spendCoins(amount, reason);
+      setBalance(response.data?.data?.new_balance || response.data?.new_balance || 0);
       await fetchTransactions();
       toast({
         title: 'Success',
@@ -114,8 +115,8 @@ export function CoinProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
 
     try {
-      const response = await api.transferCoins(user.id, toUserId, amount);
-      setBalance(response.data.data?.new_balance || 0);
+      const response = await api.transferCoins(toUserId, amount);
+      setBalance(response.data?.data?.senderBalance || response.data?.senderBalance || 0);
       await fetchTransactions();
       toast({
         title: 'Success',
