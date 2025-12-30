@@ -22,6 +22,10 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import PrivacySettings from "./components/PrivacySettings";
+import LocationMatching from "./components/LocationMatching";
+import SessionScheduling from "./components/SessionScheduling";
+import ChatSystem from "./components/ChatSystem";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +55,10 @@ const App = () => (
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/admin" element={<Admin />} />
                         <Route path="/settings" element={<Settings />} />
+                        <Route path="/privacy" element={<PrivacySettings />} />
+                        <Route path="/location" element={<LocationMatching />} />
+                        <Route path="/sessions" element={<SessionScheduling />} />
+                        <Route path="/chat" element={<ChatSystem />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

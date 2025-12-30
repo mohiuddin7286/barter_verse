@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useCoins } from '@/contexts/CoinContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
-import { Coins, Package, ArrowLeftRight, TrendingUp } from 'lucide-react';
+import { Coins, Package, ArrowLeftRight, TrendingUp, Calendar, Clock, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DashboardStats {
   totalListings: number;
@@ -36,6 +40,21 @@ export default function Dashboard() {
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [chartData, setChartData] = useState<{ month: string; trades: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Session Scheduling State
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessionLoading, setSessionLoading] = useState(false);
+  const [showCreateSession, setShowCreateSession] = useState(false);
+  const [sessionMessage, setSessionMessage] = useState('');
+  const [formData, setFormData] = useState({
+    participant_id: '',
+    skill_title: '',
+    description: '',
+    scheduled_at: '',
+    duration_minutes: 60,
+    location: '',
+    meeting_link: '',
+  });
 
   useEffect(() => {
     if (!user) {
@@ -110,6 +129,99 @@ export default function Dashboard() {
 
     return () => clearInterval(interval);
   }, [user]);
+
+  // Fetch sessions
+  const fetchSessions = async () => {
+    try {
+      setSessionLoading(true);
+      const response = await fetch('/api/sessions/my-sessions', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        setSessions(result.data || []);
+      } else {
+        setSessionMessage(`❌ ${result.message}`);
+      }
+    } catch (error: any) {
+      setSessionMessage(`❌ Error: ${error.message}`);
+    } finally {
+      setSessionLoading(false);
+    }
+  };
+
+  const handleCreateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.participant_id || !formData.skill_title || !formData.scheduled_at) {
+      setSessionMessage('❌ Please fill all required fields');
+      return;
+    }
+
+    try {
+      setSessionLoading(true);
+      const response = await fetch('/api/sessions/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSessionMessage('✅ Session created successfully!');
+        setShowCreateSession(false);
+        setFormData({
+          participant_id: '',
+          skill_title: '',
+          description: '',
+          scheduled_at: '',
+          duration_minutes: 60,
+          location: '',
+          meeting_link: '',
+        });
+        fetchSessions();
+      } else {
+        setSessionMessage(`❌ ${result.message}`);
+      }
+    } catch (error: any) {
+      setSessionMessage(`❌ Error: ${error.message}`);
+    } finally {
+      setSessionLoading(false);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      setSessionLoading(true);
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSessionMessage('✅ Session deleted successfully!');
+        fetchSessions();
+      } else {
+        setSessionMessage(`❌ ${result.message}`);
+      }
+    } catch (error: any) {
+      setSessionMessage(`❌ Error: ${error.message}`);
+    } finally {
+      setSessionLoading(false);
+    }
+  };
+
+  // Fetch sessions on component mount
+  useEffect(() => {
+    fetchSessions();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
@@ -262,6 +374,153 @@ export default function Dashboard() {
             ) : (
               <p className="text-muted-foreground text-center py-8">
                 No transactions yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Session Scheduling */}
+        <Card className="bg-[#0B1120] rounded-2xl p-6 shadow-lg border border-border">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" /> Your Sessions
+            </CardTitle>
+            <Button
+              onClick={() => setShowCreateSession(!showCreateSession)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {showCreateSession ? 'Cancel' : '+ Create Session'}
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {sessionMessage && (
+              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm">
+                {sessionMessage}
+              </div>
+            )}
+
+            {showCreateSession && (
+              <form onSubmit={handleCreateSession} className="space-y-4 p-4 border rounded-lg bg-card">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="participant_id">Participant ID</Label>
+                    <Input
+                      id="participant_id"
+                      value={formData.participant_id}
+                      onChange={(e) => setFormData({ ...formData, participant_id: e.target.value })}
+                      placeholder="Enter participant ID"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="skill_title">Skill Title</Label>
+                    <Input
+                      id="skill_title"
+                      value={formData.skill_title}
+                      onChange={(e) => setFormData({ ...formData, skill_title: e.target.value })}
+                      placeholder="e.g., Python Basics"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Session description"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="scheduled_at">Date & Time</Label>
+                    <Input
+                      id="scheduled_at"
+                      type="datetime-local"
+                      value={formData.scheduled_at}
+                      onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="duration_minutes">Duration (minutes)</Label>
+                    <Input
+                      id="duration_minutes"
+                      type="number"
+                      value={formData.duration_minutes}
+                      onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
+                      min="30"
+                      max="480"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      placeholder="In-person location"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="meeting_link">Meeting Link (Optional)</Label>
+                    <Input
+                      id="meeting_link"
+                      value={formData.meeting_link}
+                      onChange={(e) => setFormData({ ...formData, meeting_link: e.target.value })}
+                      placeholder="Zoom, Google Meet, etc."
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={sessionLoading} className="w-full bg-primary hover:bg-primary/90">
+                  {sessionLoading ? '⏳ Creating...' : '✅ Create Session'}
+                </Button>
+              </form>
+            )}
+
+            {/* Sessions List */}
+            {sessionLoading && !showCreateSession ? (
+              <div className="text-center py-8 text-muted-foreground">Loading sessions...</div>
+            ) : sessions.length > 0 ? (
+              <div className="space-y-3">
+                {sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{session.skill_title}</h3>
+                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(session.scheduled_at).toLocaleDateString()}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {session.duration_minutes} mins
+                        </span>
+                        <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
+                          {session.status}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handleDeleteSession(session.id)}
+                      variant="destructive"
+                      size="sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">
+                No sessions scheduled yet. Create one to get started!
               </p>
             )}
           </CardContent>

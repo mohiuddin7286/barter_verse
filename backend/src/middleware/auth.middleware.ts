@@ -50,3 +50,6 @@ export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) =
   }
   next();
 };
+
+// Alias for backwards compatibility
+export const verifyToken = authRequired;

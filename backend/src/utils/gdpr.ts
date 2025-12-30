@@ -10,7 +10,7 @@ export interface AuditLog {
   resourceId: string;
   changes?: Record<string, any>;
   ipAddress: string;
-  timestamp: Date;
+  timestamp?: Date;
   status: 'success' | 'failure';
 }
 
