@@ -59,7 +59,7 @@ export function TradeProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       const response = await api.getTrades();
-      const data = response.data || [];
+      const data = response.data?.data || response.data || [];
 
       // Process trades to add direction
       const processedTrades = (Array.isArray(data) ? data : []).map((trade: any) => ({
