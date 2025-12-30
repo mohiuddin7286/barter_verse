@@ -21,10 +21,21 @@ model Profile {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  // Location fields for distance-based matching
+  latitude  Float?
+  longitude Float?
+  city      String?
+  country   String?
+
   listings    Listing[]
   trades_initiated Trade[] @relation("trades_initiator")
   trades_received  Trade[] @relation("trades_responder")
   coin_transactions CoinTransaction[]
+  sessions_as_provider Session[] @relation("provider")
+  sessions_as_participant Session[] @relation("participant")
+  messages_sent Message[] @relation("sender")
+  messages_received Message[] @relation("receiver")
+  conversations Conversation[]
 
   @@index([email])
   @@index([username])
@@ -101,4 +112,85 @@ enum TradeStatus {
   ACCEPTED
   REJECTED
   COMPLETED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  
+  provider_id  String
+  provider     Profile  @relation("provider", fields: [provider_id], references: [id], onDelete: Cascade)
+  
+  participant_id String
+  participant    Profile @relation("participant", fields: [participant_id], references: [id], onDelete: Cascade)
+  
+  skill_title  String
+  description  String?  @db.Text
+  
+  scheduled_at DateTime
+  duration_minutes Int   @default(60)  // Duration in minutes
+  
+  status       SessionStatus @default(SCHEDULED)
+  location     String?
+  meeting_link String?  // For online sessions
+  
+  notes        String?  @db.Text
+  feedback     String?  @db.Text
+  rating       Float?
+  
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([provider_id])
+  @@index([participant_id])
+  @@index([status])
+  @@index([scheduled_at])
+}
+
+model Conversation {
+  id           String   @id @default(cuid())
+  
+  user_id      String
+  user         Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  other_user_id String
+  
+  last_message String?
+  last_message_at DateTime?
+  
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([user_id, other_user_id])
+  @@index([user_id])
+  @@index([updated_at])
+}
+
+model Message {
+  id           String   @id @default(cuid())
+  
+  sender_id    String
+  sender       Profile  @relation("sender", fields: [sender_id], references: [id], onDelete: Cascade)
+  
+  receiver_id  String
+  receiver     Profile  @relation("receiver", fields: [receiver_id], references: [id], onDelete: Cascade)
+  
+  content      String   @db.Text
+  
+  is_read      Boolean  @default(false)
+  read_at      DateTime?
+  
+  created_at   DateTime @default(now())
+
+  @@index([sender_id])
+  @@index([receiver_id])
+  @@index([is_read])
+  @@index([created_at])
 }

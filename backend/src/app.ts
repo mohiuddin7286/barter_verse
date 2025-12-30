@@ -10,6 +10,10 @@ import tradesRoutes from './routes/trades.routes';
 import coinsRoutes from './routes/coins.routes';
 import adminRoutes from './routes/admin.routes';
 import listingsRoutes from './routes/listings.routes';
+import privacyRoutes from './routes/privacy.routes';
+import locationRoutes from './routes/location.routes';
+import sessionsRoutes from './routes/sessions.routes';
+import chatRoutes from './routes/chat.routes';
 
 export const app = express();
 
@@ -41,5 +45,9 @@ app.use('/api/trades', tradesRoutes);
 app.use('/api/coins', coinsRoutes);
 app.use('/api/listings', listingsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/privacy', privacyRoutes);
+app.use('/api/location', locationRoutes);
+app.use('/api/sessions', sessionsRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use(errorHandler);
