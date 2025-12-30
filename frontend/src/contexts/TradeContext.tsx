@@ -34,6 +34,8 @@ interface TradeContextType {
   isLoading: boolean;
   createTrade: (data: any) => Promise<boolean>;
   confirmTrade: (id: string, action: 'accept' | 'reject') => Promise<boolean>;
+  acceptTrade: (id: string) => Promise<boolean>;
+  rejectTrade: (id: string) => Promise<boolean>;
   completeTrade: (id: string) => Promise<boolean>;
   cancelTrade: (id: string) => Promise<boolean>;
   fetchTrades: () => Promise<void>;
@@ -123,6 +125,15 @@ export function TradeProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Wrapper methods for accept and reject
+  const acceptTrade = async (id: string): Promise<boolean> => {
+    return confirmTrade(id, 'accept');
+  };
+
+  const rejectTrade = async (id: string): Promise<boolean> => {
+    return confirmTrade(id, 'reject');
+  };
+
   const completeTrade = async (id: string): Promise<boolean> => {
     if (!user) return false;
 
@@ -192,6 +203,8 @@ export function TradeProvider({ children }: { children: ReactNode }) {
         isLoading,
         createTrade,
         confirmTrade,
+        acceptTrade,
+        rejectTrade,
         completeTrade,
         cancelTrade,
         fetchTrades,

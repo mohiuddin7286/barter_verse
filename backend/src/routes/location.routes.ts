@@ -222,16 +222,5 @@ router.get('/nearby-listings', verifyToken, async (req: any, res: Response) => {
     });
   }
 });
-        },
-      })),
-      total: nearbyListings.length,
-    });
-  } catch (error: any) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
 
 export default router;
