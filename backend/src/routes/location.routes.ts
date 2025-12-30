@@ -10,35 +10,18 @@ const prisma = new PrismaClient();
 router.put('/update-location', verifyToken, async (req: any, res: Response) => {
   try {
     const userId = req.user.id;
-    const { latitude, longitude, city, country, method } = req.body;
-
-    let finalLat = latitude;
-    let finalLon = longitude;
-
-    // If city/country provided, geocode them
-    if (city && country && (!latitude || !longitude)) {
-      const coords = await geocodeLocation(city, country);
-      if (coords) {
-        finalLat = coords.latitude;
-        finalLon = coords.longitude;
-      }
-    }
-
-    // Validate coordinates
-    if (!isValidCoordinate(finalLat, finalLon)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid coordinates. Latitude must be between -90 and 90, longitude between -180 and 180',
-      });
-    }
+    const { latitude, longitude, city, town, state, country, pincode } = req.body;
 
     const updatedUser = await prisma.profile.update({
       where: { id: userId },
       data: {
-        latitude: finalLat,
-        longitude: finalLon,
-        city: city || null,
-        country: country || null,
+        latitude: latitude || undefined,
+        longitude: longitude || undefined,
+        city: city || undefined,
+        town: town || undefined,
+        state: state || undefined,
+        country: country || undefined,
+        pincode: pincode || undefined,
       },
     });
 
@@ -50,7 +33,10 @@ router.put('/update-location', verifyToken, async (req: any, res: Response) => {
         latitude: updatedUser.latitude,
         longitude: updatedUser.longitude,
         city: updatedUser.city,
+        town: updatedUser.town,
+        state: updatedUser.state,
         country: updatedUser.country,
+        pincode: updatedUser.pincode,
       },
     });
   } catch (error: any) {
@@ -73,56 +59,70 @@ router.get('/nearby-traders', verifyToken, async (req: any, res: Response) => {
       where: { id: userId },
     });
 
-    if (!currentUser || !currentUser.latitude || !currentUser.longitude) {
+    if (!currentUser) {
       return res.status(400).json({
         success: false,
-        message: 'Your location is not set. Please update your location first.',
+        message: 'User not found. Please set your location first.',
       });
     }
 
-    // Find all users with location
+    // Filter by location details (city, state, country, pincode)
+    let whereClause: any = {
+      id: { not: userId },
+    };
+
+    // Match by pincode if available
+    if (currentUser.pincode) {
+      whereClause.pincode = currentUser.pincode;
+    } 
+    // Otherwise match by state and country
+    else if (currentUser.state && currentUser.country) {
+      whereClause.state = currentUser.state;
+      whereClause.country = currentUser.country;
+    }
+    // Fall back to country and city
+    else if (currentUser.country && currentUser.city) {
+      whereClause.country = currentUser.country;
+      whereClause.city = currentUser.city;
+    }
+    // Minimum: match by country
+    else if (currentUser.country) {
+      whereClause.country = currentUser.country;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Please set your location (country/city/pincode) first.',
+      });
+    }
+
+    // Find nearby users
     let users = await prisma.profile.findMany({
-      where: {
-        id: { not: userId },
-        latitude: { not: null },
-        longitude: { not: null },
-      },
+      where: whereClause,
       include: {
         listings: {
           where: category ? { category } : undefined,
           take: 5,
         },
       },
+      take: 20,
     });
-
-    // Calculate distances and filter
-    const nearbyUsers = users
-      .map(user => ({
-        ...user,
-        distance: calculateDistance(
-          currentUser.latitude!,
-          currentUser.longitude!,
-          user.latitude!,
-          user.longitude!
-        ),
-      }))
-      .filter(user => user.distance <= radiusKm)
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 20);
 
     res.json({
       success: true,
-      data: nearbyUsers.map(user => ({
+      data: users.map(user => ({
         id: user.id,
         username: user.username,
         rating: user.rating,
         avatar_url: user.avatar_url,
-        distance: parseFloat(user.distance.toFixed(2)),
         city: user.city,
+        town: user.town,
+        state: user.state,
         country: user.country,
+        pincode: user.pincode,
         listings: user.listings,
       })),
-      total: nearbyUsers.length,
+      total: users.length,
+      matchType: currentUser.pincode ? 'pincode' : 'location',
     });
   } catch (error: any) {
     res.status(400).json({
@@ -136,7 +136,6 @@ router.get('/nearby-traders', verifyToken, async (req: any, res: Response) => {
 router.get('/nearby-listings', verifyToken, async (req: any, res: Response) => {
   try {
     const userId = req.user.id;
-    const radiusKm = parseInt(req.query.radius) || 50;
     const category = req.query.category;
 
     // Get current user's location
@@ -144,58 +143,85 @@ router.get('/nearby-listings', verifyToken, async (req: any, res: Response) => {
       where: { id: userId },
     });
 
-    if (!currentUser || !currentUser.latitude || !currentUser.longitude) {
+    if (!currentUser) {
       return res.status(400).json({
         success: false,
-        message: 'Your location is not set. Please update your location first.',
+        message: 'User not found. Please set your location first.',
       });
     }
 
-    // Find all listings with owner location
+    // Build location filter for listings owners
+    let ownerWhereClause: any = {};
+
+    // Match by pincode if available
+    if (currentUser.pincode) {
+      ownerWhereClause.pincode = currentUser.pincode;
+    } 
+    // Otherwise match by state and country
+    else if (currentUser.state && currentUser.country) {
+      ownerWhereClause.state = currentUser.state;
+      ownerWhereClause.country = currentUser.country;
+    }
+    // Fall back to country and city
+    else if (currentUser.country && currentUser.city) {
+      ownerWhereClause.country = currentUser.country;
+      ownerWhereClause.city = currentUser.city;
+    }
+    // Minimum: match by country
+    else if (currentUser.country) {
+      ownerWhereClause.country = currentUser.country;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Please set your location (country/city/pincode) first.',
+      });
+    }
+
+    // Find nearby listings
     const listings = await prisma.listing.findMany({
       where: {
         owner_id: { not: userId },
         status: 'ACTIVE',
         category: category ? category : undefined,
+        owner: ownerWhereClause,
       },
       include: {
         owner: true,
       },
+      take: 20,
     });
-
-    // Filter by distance
-    const nearbyListings = listings
-      .filter(listing => listing.owner.latitude && listing.owner.longitude)
-      .map(listing => ({
-        ...listing,
-        distance: calculateDistance(
-          currentUser.latitude!,
-          currentUser.longitude!,
-          listing.owner.latitude!,
-          listing.owner.longitude!
-        ),
-      }))
-      .filter(listing => listing.distance <= radiusKm)
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 20);
 
     res.json({
       success: true,
-      data: nearbyListings.map(listing => ({
+      data: listings.map(listing => ({
         id: listing.id,
         title: listing.title,
         description: listing.description,
         category: listing.category,
         image_url: listing.image_url,
         is_service: listing.is_service,
-        distance: parseFloat(listing.distance.toFixed(2)),
         owner: {
           id: listing.owner.id,
           username: listing.owner.username,
           rating: listing.owner.rating,
           avatar_url: listing.owner.avatar_url,
           city: listing.owner.city,
+          town: listing.owner.town,
+          state: listing.owner.state,
           country: listing.owner.country,
+          pincode: listing.owner.pincode,
+        },
+      })),
+      total: listings.length,
+      matchType: currentUser.pincode ? 'pincode' : 'location',
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
         },
       })),
       total: nearbyListings.length,

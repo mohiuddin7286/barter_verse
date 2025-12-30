@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Users, Package } from 'lucide-react';
 
 const LocationMatching = () => {
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
   const [city, setCity] = useState('');
+  const [town, setTown] = useState('');
+  const [state, setState] = useState('');
   const [country, setCountry] = useState('');
-  const [radius, setRadius] = useState(50);
+  const [pincode, setPincode] = useState('');
   const [searchType, setSearchType] = useState<'traders' | 'listings'>('traders');
-  const [category, setCategory] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -35,11 +34,9 @@ const LocationMatching = () => {
   };
 
   const updateLocation = async () => {
-    if (!latitude || !longitude) {
-      if (!city || !country) {
-        setMessage('❌ Please enter coordinates or city/country');
-        return;
-      }
+    if (!country) {
+      setMessage('❌ Please enter at least country and pincode/city');
+      return;
     }
 
     try {
@@ -51,10 +48,11 @@ const LocationMatching = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          latitude,
-          longitude,
-          city,
+          city: city || undefined,
+          town: town || undefined,
+          state: state || undefined,
           country,
+          pincode: pincode || undefined,
         }),
       });
 
@@ -72,7 +70,7 @@ const LocationMatching = () => {
   };
 
   const searchNearby = async () => {
-    if (!latitude || !longitude) {
+    if (!country) {
       setMessage('❌ Please set your location first');
       return;
     }
@@ -81,8 +79,8 @@ const LocationMatching = () => {
       setLoading(true);
       const endpoint =
         searchType === 'traders'
-          ? `/api/location/nearby-traders?radius=${radius}&category=${category}`
-          : `/api/location/nearby-listings?radius=${radius}&category=${category}`;
+          ? `/api/location/nearby-traders`
+          : `/api/location/nearby-listings`;
 
       const response = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -91,7 +89,7 @@ const LocationMatching = () => {
       const result = await response.json();
       if (result.success) {
         setResults(result.data);
-        setMessage(`✅ Found ${result.data.length} results within ${radius} km`);
+        setMessage(`✅ Found ${result.data.length} results in your area`);
       } else {
         setMessage(`❌ ${result.message}`);
       }
@@ -113,89 +111,82 @@ const LocationMatching = () => {
       )}
 
       {/* Location Setup */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* GPS Input */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">📍 Set Your Location</h2>
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4">📍 Set Your Location</h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Latitude</label>
-              <input
-                type="number"
-                step="0.0001"
-                value={latitude || ''}
-                onChange={(e) => setLatitude(parseFloat(e.target.value) || null)}
-                placeholder="e.g., 28.7041"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Pincode</label>
+            <input
+              type="text"
+              value={pincode}
+              onChange={(e) => setPincode(e.target.value)}
+              placeholder="e.g., 560001"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Longitude</label>
-              <input
-                type="number"
-                step="0.0001"
-                value={longitude || ''}
-                onChange={(e) => setLongitude(parseFloat(e.target.value) || null)}
-                placeholder="e.g., 77.1025"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">City</label>
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="e.g., Bangalore"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
 
-            <button
-              onClick={useCurrentLocation}
-              disabled={loading}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 rounded-lg font-medium"
-            >
-              📍 Use Current Location
-            </button>
+          <div>
+            <label className="block text-sm font-medium mb-2">Town</label>
+            <input
+              type="text"
+              value={town}
+              onChange={(e) => setTown(e.target.value)}
+              placeholder="e.g., Whitefield"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
           </div>
         </div>
 
-        {/* Manual Input */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">🏙️ Or Enter City/Country</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">State/Province</label>
+            <input
+              type="text"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              placeholder="e.g., Karnataka"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">City</label>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g., Bangalore"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Country</label>
-              <input
-                type="text"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                placeholder="e.g., India"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            <button
-              onClick={updateLocation}
-              disabled={loading}
-              className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white py-2 rounded-lg font-medium"
-            >
-              💾 Save Location
-            </button>
+          <div>
+            <label className="block text-sm font-medium mb-2">Country *</label>
+            <input
+              type="text"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder="e.g., India"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg font-semibold"
+            />
           </div>
         </div>
+
+        <button
+          onClick={updateLocation}
+          disabled={loading}
+          className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white py-2 rounded-lg font-medium"
+        >
+          {loading ? '⏳ Saving...' : '💾 Save Location'}
+        </button>
       </div>
 
       {/* Search Settings */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">🔍 Find Nearby</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium mb-2">Search Type</label>
             <select

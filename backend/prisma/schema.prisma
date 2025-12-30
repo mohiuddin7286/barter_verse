@@ -25,7 +25,10 @@ model Profile {
   latitude  Float?
   longitude Float?
   city      String?
+  town      String?
+  state     String?
   country   String?
+  pincode   String?
 
   listings    Listing[]
   trades_initiated Trade[] @relation("trades_initiator")

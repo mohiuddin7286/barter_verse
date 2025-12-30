@@ -17,9 +17,11 @@ export default function Explore() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Location-based search
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [radius, setRadius] = useState(50);
+  const [city, setCity] = useState('');
+  const [town, setTown] = useState('');
+  const [state, setState] = useState('');
+  const [country, setCountry] = useState('');
+  const [pincode, setPincode] = useState('');
   const [nearbyResults, setNearbyResults] = useState<any[]>([]);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
@@ -47,9 +49,8 @@ export default function Explore() {
     setLocationLoading(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-        setLocationMessage('✅ Location detected!');
+        // For now, just acknowledge the location access
+        setLocationMessage('✅ Location detected! Please enter your city/country to match with nearby traders');
         setLocationLoading(false);
       },
       () => {
@@ -60,15 +61,32 @@ export default function Explore() {
   };
 
   const searchNearby = async () => {
-    if (!latitude || !longitude) {
-      setLocationMessage('❌ Please set your location first');
+    if (!country) {
+      setLocationMessage('❌ Please enter your country at minimum');
       return;
     }
 
     try {
       setLocationLoading(true);
+      // First update user's location
+      await fetch('/api/location/update-location', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          city: city || undefined,
+          town: town || undefined,
+          state: state || undefined,
+          country,
+          pincode: pincode || undefined,
+        }),
+      });
+
+      // Then search for nearby listings
       const response = await fetch(
-        `/api/location/nearby-listings?latitude=${latitude}&longitude=${longitude}&radius=${radius}`,
+        `/api/location/nearby-listings`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         }
@@ -77,7 +95,7 @@ export default function Explore() {
       const result = await response.json();
       if (result.success) {
         setNearbyResults(result.data);
-        setLocationMessage(`✅ Found ${result.data.length} listings within ${radius} km`);
+        setLocationMessage(`✅ Found ${result.data.length} listings in your area`);
       } else {
         setLocationMessage(`❌ ${result.message}`);
       }
@@ -176,58 +194,78 @@ export default function Explore() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium block mb-2">Latitude</label>
+                  <label className="text-sm font-medium block mb-2">Pincode</label>
                   <Input
-                    type="number"
-                    step="0.0001"
-                    value={latitude || ''}
-                    onChange={(e) => setLatitude(parseFloat(e.target.value) || null)}
-                    placeholder="e.g., 28.7041"
+                    type="text"
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value)}
+                    placeholder="e.g., 560001"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium block mb-2">Longitude</label>
+                  <label className="text-sm font-medium block mb-2">City</label>
                   <Input
-                    type="number"
-                    step="0.0001"
-                    value={longitude || ''}
-                    onChange={(e) => setLongitude(parseFloat(e.target.value) || null)}
-                    placeholder="e.g., 77.1025"
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="e.g., Bangalore"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-2">Town</label>
+                  <Input
+                    type="text"
+                    value={town}
+                    onChange={(e) => setTown(e.target.value)}
+                    placeholder="e.g., Whitefield"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium block mb-2">State</label>
+                  <Input
+                    type="text"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    placeholder="e.g., Karnataka"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-2">Country *</label>
+                  <Input
+                    type="text"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="e.g., India"
+                    className="font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
                 <Button
                   onClick={useCurrentLocation}
                   disabled={locationLoading}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  variant="outline"
                 >
-                  📍 Use Current Location
+                  📍 Use My Location
                 </Button>
 
-                <div>
-                  <label className="text-sm font-medium block mb-2">Search Radius (km)</label>
-                  <Input
-                    type="number"
-                    value={radius}
-                    onChange={(e) => setRadius(parseInt(e.target.value) || 50)}
-                    min="1"
-                    max="500"
-                  />
-                </div>
+                <Button
+                  onClick={searchNearby}
+                  disabled={locationLoading}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  {locationLoading ? 'Searching...' : 'Search Nearby Listings'}
+                </Button>
               </div>
-
-              <Button
-                onClick={searchNearby}
-                disabled={locationLoading}
-                className="w-full bg-primary hover:bg-primary/90"
-              >
-                {locationLoading ? 'Searching...' : 'Search Nearby Listings'}
-              </Button>
             </div>
 
             {/* Nearby Results */}
