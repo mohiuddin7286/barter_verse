@@ -7,6 +7,10 @@ const LocationMatching = () => {
   const [state, setState] = useState('');
   const [country, setCountry] = useState('');
   const [pincode, setPincode] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [category, setCategory] = useState('');
+  const [radius, setRadius] = useState(50);
   const [searchType, setSearchType] = useState<'traders' | 'listings'>('traders');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

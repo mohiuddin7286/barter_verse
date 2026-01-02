@@ -71,7 +71,9 @@ export const createReview = async (
       where: { target_user_id },
     });
 
-    const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+    const averageRating = reviews.length > 0 
+      ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length 
+      : 5.0;
 
     await prisma.profile.update({
       where: { id: target_user_id },
@@ -161,7 +163,7 @@ export const deleteReview = async (
     });
 
     const averageRating =
-      reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 5.0;
+      reviews.length > 0 ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length : 5.0;
 
     await prisma.profile.update({
       where: { id: review.target_user_id },
