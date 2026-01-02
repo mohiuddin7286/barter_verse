@@ -10,6 +10,7 @@ datasource db {
 
 model Profile {
   id        String   @id @default(cuid())
+  uniqueId  String?  @unique @default(cuid())
   email     String   @unique
   username  String   @unique
   password  String
@@ -39,6 +40,8 @@ model Profile {
   messages_sent Message[] @relation("sender")
   messages_received Message[] @relation("receiver")
   conversations Conversation[]
+  reviews_authored Review[] @relation("reviews_authored")
+  reviews_received Review[] @relation("reviews_received")
 
   @@index([email])
   @@index([username])
@@ -197,3 +200,28 @@ model Message {
   @@index([is_read])
   @@index([created_at])
 }
+
+model Review {
+  id           String   @id @default(cuid())
+  
+  author_id    String
+  author       Profile  @relation("reviews_authored", fields: [author_id], references: [id], onDelete: Cascade)
+  
+  target_user_id String
+  target_user    Profile  @relation("reviews_received", fields: [target_user_id], references: [id], onDelete: Cascade)
+  
+  trade_id     String?
+  listing_id   String?
+  
+  rating       Int      // 1-5
+  comment      String   @db.Text
+  
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([author_id])
+  @@index([target_user_id])
+  @@index([rating])
+  @@index([created_at])
+}
+

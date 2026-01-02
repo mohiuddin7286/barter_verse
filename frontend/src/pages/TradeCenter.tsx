@@ -100,18 +100,18 @@ function TradeCard({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-3 flex-wrap">
-              <h3 className="text-xl font-semibold">{trade.listing_title || 'Trade Request'}</h3>
-              <StatusBadge status={trade.status} />
+              <h3 className="text-xl font-semibold">{trade.listing?.title || trade.listing_title || 'Trade Request'}</h3>
+              <StatusBadge status={trade.status?.toLowerCase() || 'pending'} />
             </div>
             <div className="text-muted-foreground space-y-1">
               {trade.direction === 'incoming' ? (
-                <div>From: <span className="font-medium text-foreground">{trade.sender_name || 'User'}</span></div>
+                <div>From: <span className="font-medium text-foreground">{trade.initiator?.username || 'User'}</span></div>
               ) : (
-                <div>To: <span className="font-medium text-foreground">{trade.receiver_name || 'User'}</span></div>
+                <div>To: <span className="font-medium text-foreground">{trade.responder?.username || 'User'}</span></div>
               )}
-              {trade.offered_coins > 0 && (
+              {trade.coin_amount > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-yellow-500 font-semibold">{trade.offered_coins} BC</span>
+                  <span className="text-yellow-500 font-semibold">{trade.coin_amount} BC</span>
                   <span className="text-xs">offered</span>
                 </div>
               )}

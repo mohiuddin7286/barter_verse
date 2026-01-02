@@ -93,19 +93,27 @@ export const createTrade = async (
 
     const finalResponderId = responder_id || responderUserId;
     const finalListingId = listing_id || listingId;
+    const coinAmount = coin_amount ?? 0;
 
     // Validate required fields
     if (!finalResponderId || !finalListingId) {
       return res.status(400).json({ message: 'responder_id and listing_id are required' });
     }
 
+    // Check if user has enough coins
+    const initiator = await prisma.profile.findUnique({ where: { id: req.user.id } });
+    if (!initiator || initiator.coins < coinAmount) {
+      return res.status(400).json({ message: 'Insufficient coins for this trade' });
+    }
+
+    // Create trade in a transaction
     const trade = await prisma.trade.create({
       data: {
         initiator_id: req.user.id,
         responder_id: finalResponderId,
         listing_id: finalListingId,
         proposed_listing_id,
-        coin_amount: coin_amount ?? 0,
+        coin_amount: coinAmount,
         message,
         status: 'PENDING',
       },
@@ -115,6 +123,23 @@ export const createTrade = async (
         listing: { select: { id: true, title: true } },
       },
     });
+
+    // Deduct coins from initiator
+    if (coinAmount > 0) {
+      await prisma.profile.update({
+        where: { id: req.user.id },
+        data: { coins: { decrement: coinAmount } },
+      });
+
+      // Log the transaction
+      await prisma.coinTransaction.create({
+        data: {
+          user_id: req.user.id,
+          amount: -coinAmount,
+          reason: `Trade initiated for listing: ${trade.listing_id}`,
+        },
+      });
+    }
 
     res.status(201).json({ data: trade });
   } catch (err) {
@@ -191,6 +216,23 @@ export const completeTrade = async (
         responder: { select: { id: true, username: true } },
       },
     });
+
+    // Award coins to responder if coins were offered
+    if (trade.coin_amount > 0) {
+      await prisma.profile.update({
+        where: { id: trade.responder_id },
+        data: { coins: { increment: trade.coin_amount } },
+      });
+
+      // Log the transaction
+      await prisma.coinTransaction.create({
+        data: {
+          user_id: trade.responder_id,
+          amount: trade.coin_amount,
+          reason: `Coins received from completed trade: ${trade.id}`,
+        },
+      });
+    }
 
     res.json({ data: updated });
   } catch (err) {

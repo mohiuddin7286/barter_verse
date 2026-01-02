@@ -44,8 +44,25 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       const response = await api.getListings(page, 10, category, search);
-      const data = response.data.data || [];
-      setListings(Array.isArray(data) ? data : []);
+      // Handle both response structures: { success, data: { listings, pagination } } and { data: listings[] }
+      const responseData = response.data;
+      let listingsArray = [];
+      
+      if (responseData.data?.listings) {
+        // Response structure: { data: { listings: [], pagination: {} } }
+        listingsArray = responseData.data.listings;
+      } else if (responseData.listings) {
+        // Response structure: { listings: [], pagination: {} }
+        listingsArray = responseData.listings;
+      } else if (Array.isArray(responseData.data)) {
+        // Response structure: { data: [] }
+        listingsArray = responseData.data;
+      } else if (Array.isArray(responseData)) {
+        // Response structure: []
+        listingsArray = responseData;
+      }
+      
+      setListings(Array.isArray(listingsArray) ? listingsArray : []);
     } catch (error) {
       console.error('Error fetching listings:', error);
       setListings([]);

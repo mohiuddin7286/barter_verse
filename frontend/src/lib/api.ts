@@ -14,7 +14,6 @@ class ApiClient {
       },
     });
 
-    // Add interceptor to include token in requests
     this.client.interceptors.request.use((config) => {
       if (this.token) {
         config.headers.Authorization = `Bearer ${this.token}`;
@@ -27,7 +26,6 @@ class ApiClient {
     this.token = token;
   }
 
-  // Auth endpoints
   async signup(email: string, password: string) {
     return this.client.post('/auth/signup', { email, password });
   }
@@ -40,7 +38,6 @@ class ApiClient {
     this.token = null;
   }
 
-  // Listings endpoints
   async getListings(page = 1, limit = 10, category?: string, search?: string) {
     const params: any = { page, limit };
     if (category) params.category = category;
@@ -72,8 +69,6 @@ class ApiClient {
     return this.client.patch(`/listings/${id}`, { status: 'ARCHIVED' });
   }
 
-  // Coins endpoints
-  // Coins endpoints (backend uses auth, so no userId param required)
   async getBalance() {
     return this.client.get('/coins');
   }
@@ -94,7 +89,6 @@ class ApiClient {
     return this.client.get('/coins/transactions', { params: { limit } });
   }
 
-  // Trades endpoints
   async getTrades(direction?: 'incoming' | 'outgoing') {
     const params: any = {};
     if (direction) params.direction = direction;
@@ -121,7 +115,22 @@ class ApiClient {
     return this.client.patch(`/trades/${id}/cancel`, {});
   }
 
-  // Health check
+  async createReview(data: any) {
+    return this.client.post('/reviews', data);
+  }
+
+  async getReviews(userId: string) {
+    return this.client.get(`/reviews/user/${userId}`);
+  }
+
+  async getMyReviews() {
+    return this.client.get('/reviews/my-reviews/given');
+  }
+
+  async deleteReview(id: string) {
+    return this.client.delete(`/reviews/${id}`);
+  }
+
   async health() {
     return this.client.get('/health');
   }

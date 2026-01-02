@@ -14,6 +14,7 @@ import privacyRoutes from './routes/privacy.routes';
 import locationRoutes from './routes/location.routes';
 import sessionsRoutes from './routes/sessions.routes';
 import chatRoutes from './routes/chat.routes';
+import reviewsRoutes from './routes/reviews.routes';
 
 export const app = express();
 
@@ -49,5 +50,6 @@ app.use('/api/privacy', privacyRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/sessions', sessionsRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/reviews', reviewsRoutes);
 
 app.use(errorHandler);
