@@ -15,8 +15,14 @@ class ApiClient {
     });
 
     this.client.interceptors.request.use((config) => {
-      if (this.token) {
-        config.headers.Authorization = `Bearer ${this.token}`;
+      // Prioritize internal state, fallback to localStorage
+      const storedToken = localStorage.getItem('auth_token');
+      const activeToken = this.token || storedToken;
+
+      if (activeToken) {
+        config.headers.Authorization = `Bearer ${activeToken}`;
+      } else {
+        console.log(`📤 Request to ${config.url} WITHOUT token`);
       }
       return config;
     });
@@ -24,8 +30,16 @@ class ApiClient {
 
   setToken(token: string | null) {
     this.token = token;
+    if (token) {
+        localStorage.setItem('auth_token', token);
+        console.log('API token set');
+    } else {
+        localStorage.removeItem('auth_token');
+        console.log('API token cleared');
+    }
   }
 
+  // --- Auth & User Management ---
   async signup(email: string, password: string) {
     return this.client.post('/auth/signup', { email, password });
   }
@@ -36,12 +50,29 @@ class ApiClient {
 
   async logout() {
     this.token = null;
+    localStorage.removeItem('auth_token');
   }
 
-  async getListings(page = 1, limit = 10, category?: string, search?: string) {
+  async updateProfile(data: { display_name?: string; bio?: string; avatar_url?: string; location?: string; email?: string }) {
+    return this.client.patch('/users/profile', data);
+  }
+
+  async updateSettings(data: any) {
+    return this.client.patch('/users/settings', data);
+  }
+
+  async getUserProfile(userId: string) {
+    return this.client.get(`/users/${userId}`);
+  }
+
+  // --- Listings ---
+  async getListings(page = 1, limit = 10, category?: string, search?: string, sort?: string, minPrice?: number, maxPrice?: number) {
     const params: any = { page, limit };
-    if (category) params.category = category;
+    if (category && category !== 'all') params.category = category;
     if (search) params.search = search;
+    if (sort) params.sort = sort;
+    if (minPrice !== undefined) params.minPrice = minPrice;
+    if (maxPrice !== undefined) params.maxPrice = maxPrice;
     return this.client.get('/listings', { params });
   }
 
@@ -69,6 +100,7 @@ class ApiClient {
     return this.client.patch(`/listings/${id}`, { status: 'ARCHIVED' });
   }
 
+  // --- Barter Coins (Wallet) ---
   async getBalance() {
     return this.client.get('/coins');
   }
@@ -89,6 +121,7 @@ class ApiClient {
     return this.client.get('/coins/transactions', { params: { limit } });
   }
 
+  // --- Trading System ---
   async getTrades(direction?: 'incoming' | 'outgoing') {
     const params: any = {};
     if (direction) params.direction = direction;
@@ -115,6 +148,7 @@ class ApiClient {
     return this.client.patch(`/trades/${id}/cancel`, {});
   }
 
+  // --- Reviews ---
   async createReview(data: any) {
     return this.client.post('/reviews', data);
   }
@@ -133,6 +167,53 @@ class ApiClient {
 
   async health() {
     return this.client.get('/health');
+  }
+
+  // --- Community (Discussions) ---
+  async getPosts() {
+    return this.client.get('/community/posts');
+  }
+
+  async createPost(data: { title: string; content: string; tag?: string }) {
+    return this.client.post('/community/posts', data);
+  }
+
+  async likePost(postId: string) {
+    return this.client.post(`/community/posts/${postId}/like`, {});
+  }
+
+  async commentPost(postId: string, content: string) {
+    return this.client.post(`/community/posts/${postId}/comment`, { content });
+  }
+
+  async getPostComments(postId: string) {
+    return this.client.get(`/community/posts/${postId}/comments`);
+  }
+
+  // --- Chat System (NEW) ---
+  async getConversations() {
+    return this.client.get('/chat/conversations');
+  }
+
+  async getMessages(otherUserId: string) {
+    return this.client.get(`/chat/messages/${otherUserId}`);
+  }
+
+  async sendMessage(receiverId: string, content: string) {
+    return this.client.post('/chat/send', { receiverId, content });
+  }
+  // --- Location / Map ---
+  async getEcoMapItems() {
+    return this.client.get('/location/map');
+  }
+
+  // --- Sessions / Skill Booking ---
+  async createSession(data: { participant_id: string; skill_title: string; scheduled_at: string; duration_minutes?: number }) {
+    return this.client.post('/sessions/create', data);
+  }
+
+  async getSessionById(id: string) {
+    return this.client.get(`/sessions/${id}`);
   }
 }
 

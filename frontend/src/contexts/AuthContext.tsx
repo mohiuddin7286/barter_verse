@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 
@@ -7,6 +7,7 @@ interface User {
   email: string;
   display_name?: string;
   bio?: string;
+  avatar_url?: string;
   rating?: number;
   coins?: number;
   created_at?: string;
@@ -29,26 +30,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const initializeRef = useRef(false);
 
-  // Initialize auth from localStorage
-  useEffect(() => {
+  // Initialize auth from localStorage - do this synchronously
+  if (!initializeRef.current) {
     const storedToken = localStorage.getItem('auth_token');
     const storedUser = localStorage.getItem('user');
     
+    console.log('🔐 AuthContext init - storedToken:', storedToken ? `${storedToken.substring(0, 20)}...` : 'null');
+    console.log('👤 AuthContext init - storedUser:', storedUser ? 'exists' : 'null');
+    
     if (storedToken && storedUser) {
       try {
+        // Set token on api client IMMEDIATELY
+        api.setToken(storedToken);
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
-        api.setToken(storedToken);
+        console.log('✅ Auth restored from localStorage');
       } catch (error) {
-        console.error('Failed to restore auth from localStorage:', error);
+        console.error('❌ Failed to restore auth from localStorage:', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
+        api.setToken(null);
       }
+    } else {
+      // No stored auth, clear api token
+      api.setToken(null);
+      console.log('❌ No stored auth in localStorage');
     }
     
+    initializeRef.current = true;
     setLoading(false);
-  }, []);
+  }
 
   const signUp = async (email: string, password: string) => {
     try {
@@ -97,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await api.logout();
       setToken(null);
       setUser(null);
+      api.setToken(null);
       
       // Clear localStorage
       localStorage.removeItem('auth_token');

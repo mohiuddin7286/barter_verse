@@ -1,84 +1,91 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+ 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 214 32% 91%;
-
-    --card: 217 33% 17%;
-    --card-foreground: 214 32% 91%;
-
-    --popover: 217 33% 17%;
-    --popover-foreground: 214 32% 91%;
-
-    --primary: 239 84% 67%;
-    --primary-foreground: 214 32% 91%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 214 32% 91%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 48 96% 53%;
-    --accent-foreground: 222 47% 11%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 214 32% 91%;
-
-    --border: 217 33% 25%;
-    --input: 217 33% 25%;
-    --ring: 239 84% 67%;
-
-    --radius: 1rem;
-
-    --glow: 48 96% 53%;
-    --surface: 217 33% 17%;
-    --midnight: 222 47% 11%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.4 71.8% 29.2%;
+ 
+    --radius: 0.5rem;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    @apply bg-background text-foreground;
   }
 }
 
-@layer utilities {
-  .glow-effect {
-    box-shadow: 0 0 20px hsl(var(--glow) / 0.3), 0 4px 20px rgba(59, 130, 246, 0.2);
-  }
+/* Custom Animations */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob {
+  animation: blob 7s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+/* Custom Map Marker Styling */
+.custom-map-marker {
+  background: transparent;
+  border: none;
+}
 
-  .glow-text {
-    text-shadow: 0 0 20px hsl(var(--glow) / 0.5);
-  }
+.price-marker {
+  background-color: #059669; /* emerald-600 */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  border: 2px solid #020617; /* slate-950 */
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .card-glass {
-    background: hsl(var(--card) / 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--border));
-  }
-
-  .gradient-border {
-    border-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--glow))) 1;
-  }
-
-  .scroll-smooth {
-    scroll-behavior: smooth;
-  }
+.price-marker:hover {
+  transform: scale(1.1);
+  background-color: #10b981; /* emerald-500 */
+  z-index: 500;
+  cursor: pointer;
 }

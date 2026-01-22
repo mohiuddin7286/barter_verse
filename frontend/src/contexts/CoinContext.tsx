@@ -28,7 +28,7 @@ export function CoinProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const fetchBalance = async () => {
@@ -134,13 +134,14 @@ export function CoinProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Fetch balance when user logs in
+  // Fetch balance when user logs in (but not until auth is done loading)
   useEffect(() => {
+    if (authLoading) return;
     if (user) {
       fetchBalance();
       fetchTransactions();
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   // Poll for updates every 30 seconds
   useEffect(() => {

@@ -127,3 +127,48 @@ export const me = async (req: Request, res: Response) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 };
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    console.log('updateProfile called');
+    console.log('req.userId:', (req as any).userId);
+    console.log('req.user:', (req as any).user);
+    console.log('req.headers.authorization:', req.headers.authorization);
+    
+    const userId = (req as any).userId || (req as any).user?.id;
+    
+    if (!userId) {
+      console.error('No userId found in request');
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    const { display_name, bio, avatar_url } = req.body;
+
+    const updateData: any = {};
+    if (display_name) {
+      updateData.username = display_name;
+      updateData.display_name = display_name;
+    }
+    if (bio !== undefined) {
+      updateData.bio = bio;
+    }
+    if (avatar_url) {
+      updateData.avatar_url = avatar_url;
+    }
+
+    console.log('Updating user', userId, 'with data:', Object.keys(updateData));
+
+    const user = await prisma.profile.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    res.json({ 
+      success: true,
+      data: { user: buildUserPayload(user) }
+    });
+  } catch (err: any) {
+    console.error('updateProfile error:', err);
+    res.status(500).json({ success: false, message: 'Failed to update profile' });
+  }
+};

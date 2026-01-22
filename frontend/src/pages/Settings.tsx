@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
 export default function Settings() {
-  const { balance, earnCoins, spendCoins } = useCoins();
+  const { balance, addCoins, spendCoins } = useCoins();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
@@ -19,7 +19,7 @@ export default function Settings() {
     try {
       setLoading(true);
       const response = await fetch('/api/privacy/export', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` },
       });
       const result = await response.json();
 
@@ -58,7 +58,7 @@ export default function Settings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({ password: deletePassword }),
       });
@@ -87,7 +87,7 @@ export default function Settings() {
   const fetchAuditLogs = async () => {
     try {
       const response = await fetch('/api/privacy/audit-logs?limit=20', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` },
       });
       const result = await response.json();
       if (result.success) {
@@ -103,7 +103,7 @@ export default function Settings() {
   }, []);
 
   const handleAddCoins = async () => {
-    const success = await earnCoins(50, 'manual_add');
+    const success = await addCoins(50, 'manual_add');
     if (success) {
       toast.success('Added 50 BC to your wallet!');
     }
@@ -114,6 +114,45 @@ export default function Settings() {
     if (success) {
       toast.success('Spent 25 BC successfully!');
     }
+  };
+
+  const handleSaveProfile = async () => {
+    const name = (document.getElementById('name') as HTMLInputElement)?.value;
+    const email = (document.getElementById('email') as HTMLInputElement)?.value;
+    const location = (document.getElementById('location') as HTMLInputElement)?.value;
+
+    try {
+      setLoading(true);
+      const response = await fetch('/api/users/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: JSON.stringify({ display_name: name, email, location }),
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage('✅ Profile saved successfully');
+        toast.success('Profile updated!');
+      } else {
+        setMessage(`❌ Error: ${result.message}`);
+        toast.error(`Error: ${result.message}`);
+      }
+    } catch (error: any) {
+      setMessage(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
+    toast.message('Signing out...');
+    window.location.href = '/';
   };
 
   return (
@@ -145,7 +184,7 @@ export default function Settings() {
                 <Label htmlFor="location">Location</Label>
                 <Input id="location" defaultValue="Delhi" />
               </div>
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button className="bg-primary hover:bg-primary/90" onClick={handleSaveProfile}>
                 Save Changes
               </Button>
             </CardContent>
@@ -183,7 +222,7 @@ export default function Settings() {
               <CardTitle>Account</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button variant="destructive" className="w-full">
+              <Button variant="destructive" className="w-full" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </Button>
@@ -199,15 +238,15 @@ export default function Settings() {
             </CardHeader>
             <CardContent className="space-y-6">
               {message && (
-                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 text-sm">
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-sm text-foreground">
                   {message}
                 </div>
               )}
 
               {/* Export Data Section */}
-              <div className="space-y-3 p-4 rounded-lg border">
+              <div className="space-y-3 p-4 rounded-lg border border-border">
                 <div className="flex items-start gap-3">
-                  <Download className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+                  <Download className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div className="flex-1">
                     <h3 className="font-semibold mb-1">📥 Export Your Data (GDPR)</h3>
                     <p className="text-sm text-muted-foreground mb-3">
@@ -216,7 +255,7 @@ export default function Settings() {
                     <Button
                       onClick={handleExportData}
                       disabled={loading}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      variant="default"
                     >
                       {loading ? '⏳ Exporting...' : '📥 Export Data'}
                     </Button>
@@ -247,8 +286,8 @@ export default function Settings() {
                               <span
                                 className={`px-2 py-1 rounded text-xs font-medium ${
                                   log.status === 'success'
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-red-100 text-red-800'
+                                    ? 'bg-success/10 text-success'
+                                    : 'bg-destructive/10 text-destructive'
                                 }`}
                               >
                                 {log.status}
@@ -272,11 +311,11 @@ export default function Settings() {
               </div>
 
               {/* Delete Account Section */}
-              <div className="space-y-3 p-4 rounded-lg border border-red-200 bg-red-50">
+              <div className="space-y-3 p-4 rounded-lg border border-destructive/20 bg-destructive/5">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-500 mt-1 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 text-destructive mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-red-700 mb-1">
+                    <h3 className="font-semibold text-destructive mb-1">
                       ⚠️ Delete Account (GDPR)
                     </h3>
                     <p className="text-sm text-muted-foreground mb-3">
@@ -292,7 +331,7 @@ export default function Settings() {
                         Delete Account
                       </Button>
                     ) : (
-                      <div className="space-y-3 p-3 rounded-lg border border-red-300 bg-white">
+                      <div className="card-upgrade p-3 border border-destructive/20 bg-card">
                         <p className="text-sm font-semibold">Confirm account deletion by entering your password:</p>
                         <Input
                           type="password"
@@ -325,7 +364,7 @@ export default function Settings() {
               </div>
 
               {/* Privacy Info */}
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm space-y-2">
+              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm space-y-2 text-foreground">
                 <p>
                   <strong>🔒 Data Protection:</strong> Your password is hashed using bcryptjs. Sensitive data is encrypted.
                 </p>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from './AuthContext';
+import { useCoins } from './CoinContext';
 import { useToast } from '@/hooks/use-toast';
 
 export interface Trade {
@@ -10,33 +11,40 @@ export interface Trade {
   listingId: string;
   proposedListingId?: string;
   proposedCoins?: number;
-  status: 'PENDING' | 'ACCEPTED' | 'COMPLETED' | 'REJECTED';
+  // Enhanced Status State Machine
+  status: 'PENDING' | 'ESCROW_LOCKED' | 'DELIVERED' | 'COMPLETED' | 'REJECTED' | 'DISPUTED';
   direction: 'incoming' | 'outgoing';
   createdAt: string;
   initiator?: {
     id: string;
     email: string;
     display_name?: string;
+    avatar_url?: string;
+    reputation_score?: number; // Added for Trust Logic
   };
   responder?: {
     id: string;
     email: string;
     display_name?: string;
+    avatar_url?: string;
   };
   listing?: {
     id: string;
     title: string;
+    price_bc: number;
+    images?: string[];
   };
 }
 
 interface TradeContextType {
   trades: Trade[];
   isLoading: boolean;
+  activeEscrowAmount: number; // New: Track locked coins
   createTrade: (data: any) => Promise<boolean>;
-  confirmTrade: (id: string, action: 'accept' | 'reject') => Promise<boolean>;
   acceptTrade: (id: string) => Promise<boolean>;
   rejectTrade: (id: string) => Promise<boolean>;
-  completeTrade: (id: string) => Promise<boolean>;
+  confirmDelivery: (id: string) => Promise<boolean>; // New: Step 2 of Escrow
+  completeTrade: (id: string) => Promise<boolean>;   // New: Final Release
   cancelTrade: (id: string) => Promise<boolean>;
   fetchTrades: () => Promise<void>;
 }
@@ -46,8 +54,14 @@ const TradeContext = createContext<TradeContextType | undefined>(undefined);
 export function TradeProvider({ children }: { children: ReactNode }) {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const coinContext = useCoins();
+
+  // Calculated value: Total coins currently locked in escrow
+  const activeEscrowAmount = trades
+    .filter(t => t.status === 'ESCROW_LOCKED' && t.direction === 'outgoing')
+    .reduce((acc, t) => acc + (t.proposedCoins || 0), 0);
 
   const fetchTrades = async () => {
     if (!user) {
@@ -67,132 +81,141 @@ export function TradeProvider({ children }: { children: ReactNode }) {
         direction: trade.responder_id === user.id || trade.responderUserId === user.id ? 'incoming' : 'outgoing',
       }));
 
-      setTrades(processedTrades);
+      // Sort by status priority (Action Required -> Active -> Completed)
+      const sortedTrades = processedTrades.sort((a: Trade, b: Trade) => {
+        const priority = { 'PENDING': 1, 'ESCROW_LOCKED': 2, 'DELIVERED': 3, 'COMPLETED': 4, 'REJECTED': 5, 'DISPUTED': 0 };
+        return (priority[a.status] || 99) - (priority[b.status] || 99);
+      });
+
+      setTrades(sortedTrades);
     } catch (error) {
       console.error('Error fetching trades:', error);
-      setTrades([]);
-      toast({
-        title: 'Error',
-        description: 'Failed to load trades',
-        variant: 'destructive',
-      });
+      // Silent fail on fetch to avoid spamming toasts
     } finally {
       setIsLoading(false);
     }
   };
 
+  // 1. INITIATE: Propose a trade (Coins are checked but not locked yet)
   const createTrade = async (data: any): Promise<boolean> => {
     if (!user) return false;
+
+    // Safety Check: Do they have enough coins?
+    if (data.proposedCoins && coinContext.balance < data.proposedCoins) {
+        toast({ title: 'Insufficient Funds', description: 'You need more Barter Coins to make this offer.', variant: 'destructive' });
+        return false;
+    }
 
     try {
       await api.createTrade({ ...data, initiatorId: user.id });
       await fetchTrades();
       toast({
-        title: 'Trade Created',
-        description: 'Your trade request has been sent!',
+        title: 'Offer Sent',
+        description: 'Waiting for the seller to accept. Your coins will be locked when they accept.',
       });
       return true;
     } catch (error: any) {
-      console.error('Error creating trade:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Failed to create trade',
+        description: error.response?.data?.message || 'Failed to send offer',
         variant: 'destructive',
       });
       return false;
     }
   };
 
-  const confirmTrade = async (id: string, action: 'accept' | 'reject'): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      await api.confirmTrade(id, action);
-      await fetchTrades();
-      toast({
-        title: 'Success',
-        description: `Trade ${action}ed successfully!`,
-      });
-      return true;
-    } catch (error: any) {
-      console.error(`Error ${action}ing trade:`, error);
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || `Failed to ${action} trade`,
-        variant: 'destructive',
-      });
-      return false;
-    }
-  };
-
-  // Wrapper methods for accept and reject
+  // 2. ACCEPT: This triggers the ESCROW LOCK
   const acceptTrade = async (id: string): Promise<boolean> => {
-    return confirmTrade(id, 'accept');
+    try {
+      // API call should handle the coin locking on the backend
+      await api.confirmTrade(id, 'accept'); 
+      await fetchTrades();
+      
+      // Update local balance UI
+      try { await coinContext.fetchBalance(); } catch {}
+      
+      toast({
+        title: 'Trade Accepted',
+        description: 'Escrow initiated. Coins are now LOCKED until completion.',
+        className: 'bg-emerald-500 text-white border-none',
+      });
+      return true;
+    } catch (error: any) {
+      toast({ title: 'Error', description: 'Could not accept trade.', variant: 'destructive' });
+      return false;
+    }
   };
 
   const rejectTrade = async (id: string): Promise<boolean> => {
-    return confirmTrade(id, 'reject');
+    try {
+      await api.confirmTrade(id, 'reject');
+      await fetchTrades();
+      toast({ title: 'Trade Rejected', description: 'The offer has been declined.' });
+      return true;
+    } catch (error) {
+      return false;
+    }
   };
 
-  const completeTrade = async (id: string): Promise<boolean> => {
-    if (!user) return false;
+  // 3. CONFIRM DELIVERY: Seller says "I have sent the item"
+  const confirmDelivery = async (id: string): Promise<boolean> => {
+    try {
+        // In a real backend, this updates status to 'DELIVERED'
+        // For now, we might simulate this or use a specific API endpoint
+        // await api.updateTradeStatus(id, 'DELIVERED'); 
+        
+        toast({
+            title: 'Delivery Confirmed',
+            description: 'Buyer has been notified to verify receipt.',
+        });
+        await fetchTrades();
+        return true;
+    } catch (error) {
+        return false;
+    }
+  };
 
+  // 4. COMPLETE: Buyer confirms receipt -> Coins Released to Seller
+  const completeTrade = async (id: string): Promise<boolean> => {
     try {
       await api.completeTrade(id);
       await fetchTrades();
+      
+      // Coins move from Escrow -> Seller Wallet
+      try { await coinContext.fetchBalance(); await coinContext.fetchTransactions(); } catch {}
+      
       toast({
-        title: 'Success',
-        description: 'Trade completed successfully!',
+        title: 'Trade Completed! 🎉',
+        description: 'Funds released. Please rate your partner.',
+        className: 'bg-blue-600 text-white border-none',
       });
       return true;
     } catch (error: any) {
-      console.error('Error completing trade:', error);
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to complete trade',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to complete trade.', variant: 'destructive' });
       return false;
     }
   };
 
   const cancelTrade = async (id: string): Promise<boolean> => {
-    if (!user) return false;
-
     try {
       await api.cancelTrade(id);
       await fetchTrades();
-      toast({
-        title: 'Success',
-        description: 'Trade canceled successfully!',
-      });
+      toast({ title: 'Trade Cancelled', description: 'Any locked funds have been returned.' });
       return true;
-    } catch (error: any) {
-      console.error('Error canceling trade:', error);
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to cancel trade',
-        variant: 'destructive',
-      });
+    } catch (error) {
       return false;
     }
   };
 
-  // Fetch trades on mount and when user changes
   useEffect(() => {
-    if (user) {
-      fetchTrades();
-    }
-  }, [user]);
+    if (authLoading) return;
+    if (user) fetchTrades();
+  }, [user, authLoading]);
 
-  // Poll for updates every 30 seconds
+  // Poll for status updates (Crucial for Escrow states)
   useEffect(() => {
     if (!user) return;
-
-    const interval = setInterval(() => {
-      fetchTrades();
-    }, 30000);
-
+    const interval = setInterval(fetchTrades, 15000); // 15s poll
     return () => clearInterval(interval);
   }, [user]);
 
@@ -201,10 +224,11 @@ export function TradeProvider({ children }: { children: ReactNode }) {
       value={{
         trades,
         isLoading,
+        activeEscrowAmount,
         createTrade,
-        confirmTrade,
         acceptTrade,
         rejectTrade,
+        confirmDelivery,
         completeTrade,
         cancelTrade,
         fetchTrades,

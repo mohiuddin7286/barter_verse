@@ -15,6 +15,7 @@ import locationRoutes from './routes/location.routes';
 import sessionsRoutes from './routes/sessions.routes';
 import chatRoutes from './routes/chat.routes';
 import reviewsRoutes from './routes/reviews.routes';
+import communityRoutes from './routes/community.routes';
 
 export const app = express();
 
@@ -24,7 +25,16 @@ app.use(helmet());
 // CORS Configuration
 const corsOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-  : ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082', 'http://127.0.0.1:5173', 'http://127.0.0.1:8080', 'http://127.0.0.1:8081', 'http://127.0.0.1:8082'];
+  : [
+      'http://localhost:5173', 
+      'http://localhost:8080', 
+      'http://localhost:8081', 
+      'http://localhost:8082', 
+      'http://127.0.0.1:5173', 
+      'http://127.0.0.1:8080', 
+      'http://127.0.0.1:8081', 
+      'http://127.0.0.1:8082'
+    ];
 
 app.use(
   cors({
@@ -41,6 +51,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+// Routes Registration
 app.use('/api/auth', authRoutes);
 app.use('/api/trades', tradesRoutes);
 app.use('/api/coins', coinsRoutes);
@@ -51,5 +62,7 @@ app.use('/api/location', locationRoutes);
 app.use('/api/sessions', sessionsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/reviews', reviewsRoutes);
+app.use('/api/community', communityRoutes);
 
+// Error Handler must be last
 app.use(errorHandler);

@@ -154,15 +154,15 @@ const SessionScheduling = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-primary/10 text-primary';
       case 'IN_PROGRESS':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-warning/10 text-warning';
       case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success/10 text-success';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/10 text-destructive';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -171,7 +171,7 @@ const SessionScheduling = () => {
       <h1 className="text-3xl font-bold mb-8">📅 Skill Session Scheduling</h1>
 
       {message && (
-        <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
+        <div className="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/20 text-foreground">
           {message}
         </div>
       )}
@@ -184,8 +184,8 @@ const SessionScheduling = () => {
             onClick={() => setActiveTab(tab as any)}
             className={`px-4 py-2 font-medium capitalize ${
               activeTab === tab
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'border-b-2' + ' border-[hsl(var(--primary))] text-primary'
+                : 'text-muted-foreground hover:text-secondary'
             }`}
           >
             {tab === 'all' ? '📅 All Sessions' : tab === 'provider' ? '👨‍🏫 As Provider' : '👨‍🎓 As Participant'}
@@ -196,14 +196,14 @@ const SessionScheduling = () => {
       {/* Create Button */}
       <button
         onClick={() => setShowCreateForm(!showCreateForm)}
-        className="mb-6 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium"
+        className="mb-6 btn-primary"
       >
         {showCreateForm ? '❌ Cancel' : '➕ New Session'}
       </button>
 
       {/* Create Form */}
       {showCreateForm && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="card-upgrade p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Create New Session</h2>
 
           <form onSubmit={handleCreateSession} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,7 +213,7 @@ const SessionScheduling = () => {
               value={formData.participant_id}
               onChange={(e) => setFormData({ ...formData, participant_id: e.target.value })}
               required
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[hsl(var(--border))] rounded-lg bg-card text-foreground"
             />
 
             <input
@@ -222,14 +222,14 @@ const SessionScheduling = () => {
               value={formData.skill_title}
               onChange={(e) => setFormData({ ...formData, skill_title: e.target.value })}
               required
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[hsl(var(--border))] rounded-lg bg-card text-foreground"
             />
 
             <textarea
               placeholder="Description (optional)"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg col-span-1 md:col-span-2"
+              className="px-4 py-2 border border-[hsl(var(--border))] rounded-lg col-span-1 md:col-span-2 bg-card text-foreground"
               rows={2}
             />
 
@@ -238,7 +238,7 @@ const SessionScheduling = () => {
               value={formData.scheduled_at}
               onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
               required
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[hsl(var(--border))] rounded-lg bg-card text-foreground"
             />
 
             <input
@@ -248,7 +248,7 @@ const SessionScheduling = () => {
               onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
               min="30"
               max="480"
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[hsl(var(--border))] rounded-lg bg-card text-foreground"
             />
 
             <input
@@ -256,7 +256,7 @@ const SessionScheduling = () => {
               placeholder="Location (optional)"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[hsl(var(--border))] rounded-lg bg-card text-foreground"
             />
 
             <input
@@ -264,13 +264,13 @@ const SessionScheduling = () => {
               placeholder="Meeting Link (optional)"
               value={formData.meeting_link}
               onChange={(e) => setFormData({ ...formData, meeting_link: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[hsl(var(--border))] rounded-lg bg-card text-foreground"
             />
 
             <button
               type="submit"
               disabled={loading}
-              className="col-span-1 md:col-span-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white py-2 rounded-lg font-medium"
+              className="col-span-1 md:col-span-2 btn-primary"
             >
               {loading ? '⏳ Creating...' : '✅ Create Session'}
             </button>
@@ -295,16 +295,16 @@ const SessionScheduling = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <Calendar size={18} className="text-blue-500" />
+                  <Calendar size={18} className="text-primary" />
                   <span>{new Date(session.scheduled_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock size={18} className="text-blue-500" />
+                  <Clock size={18} className="text-primary" />
                   <span>{new Date(session.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({session.duration_minutes} min)</span>
                 </div>
                 {session.location && (
                   <div className="flex items-center gap-2">
-                    <MapPin size={18} className="text-red-500" />
+                    <MapPin size={18} className="text-destructive" />
                     <span>{session.location}</span>
                   </div>
                 )}
@@ -313,7 +313,7 @@ const SessionScheduling = () => {
                     href={session.meeting_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-500 hover:underline"
+                    className="flex items-center gap-2 text-primary hover:underline"
                   >
                     <LinkIcon size={18} />
                     <span>Meeting Link</span>
@@ -330,7 +330,7 @@ const SessionScheduling = () => {
 
               {/* Status Update Section */}
               {session.status === 'COMPLETED' && !session.rating && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg text-foreground text-sm">
                   <label className="block text-sm font-medium mb-2">Rate this session (1-5 stars)</label>
                   <input
                     type="number"

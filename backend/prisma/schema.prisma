@@ -9,20 +9,22 @@ datasource db {
 }
 
 model Profile {
-  id        String   @id @default(cuid())
-  uniqueId  String?  @unique @default(cuid())
-  email     String   @unique
-  username  String   @unique
-  password  String
-  avatar_url String?
-  bio       String?
-  coins     Int      @default(100)
-  rating    Float    @default(5.0)
-  role      String   @default("user")  // "user" or "admin"
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id           String   @id @default(cuid())
+  uniqueId     String?  @unique @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  display_name String?
+  password     String
+  avatar_url   String?
+  bio          String?
+  coins        Int      @default(100)
+  rating       Float    @default(5.0)
+  role         String   @default("user") // "user" or "admin"
+  
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
-  // Location fields for distance-based matching
+  // Location fields
   latitude  Float?
   longitude Float?
   city      String?
@@ -31,21 +33,26 @@ model Profile {
   country   String?
   pincode   String?
 
-  listings    Listing[]
-  trades_initiated Trade[] @relation("trades_initiator")
-  trades_received  Trade[] @relation("trades_responder")
-  coin_transactions CoinTransaction[]
-  sessions_as_provider Session[] @relation("provider")
-  sessions_as_participant Session[] @relation("participant")
-  messages_sent Message[] @relation("sender")
-  messages_received Message[] @relation("receiver")
-  conversations Conversation[]
-  reviews_authored Review[] @relation("reviews_authored")
-  reviews_received Review[] @relation("reviews_received")
+  // --- Existing Relations ---
+  listings             Listing[]
+  trades_initiated     Trade[]           @relation("trades_initiator")
+  trades_received      Trade[]           @relation("trades_responder")
+  coin_transactions    CoinTransaction[]
+  sessions_as_provider Session[]         @relation("provider")
+  sessions_as_participant Session[]      @relation("participant")
+  messages_sent        Message[]         @relation("sender")
+  messages_received    Message[]         @relation("receiver")
+  conversations        Conversation[]
+  reviews_authored     Review[]          @relation("reviews_authored")
+  reviews_received     Review[]          @relation("reviews_received")
+
+  // --- NEW: Community & Privacy Relations ---
+  posts     Post[]
+  comments  Comment[]
+  auditLogs AuditLog[]
 
   @@index([email])
   @@index([username])
-  @@index([role])
 }
 
 model Listing {
@@ -56,7 +63,11 @@ model Listing {
   title        String
   description  String   @db.Text
   category     String
-  image_url    String?
+  
+  images       String[] 
+  price_bc     Int      @default(0) 
+  location     String?  
+  
   is_service   Boolean  @default(false)
   status       ListingStatus @default(ACTIVE)
   
@@ -71,23 +82,24 @@ model Listing {
 }
 
 model Trade {
-  id                 String   @id @default(cuid())
-  initiator_id       String
-  initiator          Profile  @relation("trades_initiator", fields: [initiator_id], references: [id], onDelete: Cascade)
+  id                  String   @id @default(cuid())
+  initiator_id        String
+  initiator           Profile  @relation("trades_initiator", fields: [initiator_id], references: [id], onDelete: Cascade)
   
-  responder_id       String
-  responder          Profile  @relation("trades_responder", fields: [responder_id], references: [id], onDelete: Cascade)
+  responder_id        String
+  responder           Profile  @relation("trades_responder", fields: [responder_id], references: [id], onDelete: Cascade)
   
-  listing_id         String
-  listing            Listing  @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+  listing_id          String
+  listing             Listing  @relation(fields: [listing_id], references: [id], onDelete: Cascade)
   
   proposed_listing_id String?
-  coin_amount        Int      @default(0)
-  message            String?  @db.Text
+  coin_amount         Int      @default(0)
+  message             String?  @db.Text
   
-  status             TradeStatus @default(PENDING)
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+  status              TradeStatus @default(PENDING)
+  
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 
   @@index([initiator_id])
   @@index([responder_id])
@@ -96,16 +108,72 @@ model Trade {
 }
 
 model CoinTransaction {
-  id        String   @id @default(cuid())
-  user_id   String
-  user      Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  user_id    String
+  user       Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   
-  amount    Int
-  reason    String
+  amount     Int
+  reason     String
   created_at DateTime @default(now())
 
   @@index([user_id])
 }
+
+// --- NEW: Community Models ---
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  tag       String?  @default("General")
+  likes     Int      @default(0)
+  
+  authorId  String
+  author    Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  comments  Comment[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  authorId  String
+  author    Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+// --- NEW: Privacy & Audit Logs ---
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  
+  userId    String?
+  user      Profile? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  action    String
+  resource  String
+  details   String?  @db.Text
+  ipAddress String?
+  status    String   @default("success") // success or failure
+  
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// --- Enums & Other Models ---
 
 enum ListingStatus {
   ACTIVE
@@ -115,9 +183,13 @@ enum ListingStatus {
 
 enum TradeStatus {
   PENDING
-  ACCEPTED
-  REJECTED
-  COMPLETED
+  ACCEPTED       
+  ESCROW_LOCKED  
+  DELIVERED      
+  COMPLETED      
+  REJECTED       
+  CANCELLED      
+  DISPUTED       
 }
 
 enum SessionStatus {
@@ -129,99 +201,78 @@ enum SessionStatus {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id             String   @id @default(cuid())
   
-  provider_id  String
-  provider     Profile  @relation("provider", fields: [provider_id], references: [id], onDelete: Cascade)
+  provider_id    String
+  provider       Profile  @relation("provider", fields: [provider_id], references: [id], onDelete: Cascade)
   
   participant_id String
-  participant    Profile @relation("participant", fields: [participant_id], references: [id], onDelete: Cascade)
+  participant    Profile  @relation("participant", fields: [participant_id], references: [id], onDelete: Cascade)
   
-  skill_title  String
-  description  String?  @db.Text
+  skill_title    String
+  description    String?  @db.Text
   
-  scheduled_at DateTime
-  duration_minutes Int   @default(60)  // Duration in minutes
+  scheduled_at   DateTime
+  duration_minutes Int    @default(60)
   
-  status       SessionStatus @default(SCHEDULED)
-  location     String?
-  meeting_link String?  // For online sessions
+  status         SessionStatus @default(SCHEDULED)
+  location       String?
+  meeting_link   String?
   
-  notes        String?  @db.Text
-  feedback     String?  @db.Text
-  rating       Float?
+  notes          String?  @db.Text
+  feedback       String?  @db.Text
+  rating         Float?
   
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   @@index([provider_id])
   @@index([participant_id])
   @@index([status])
-  @@index([scheduled_at])
 }
 
 model Conversation {
-  id           String   @id @default(cuid())
-  
-  user_id      String
-  user         Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  
-  other_user_id String
-  
-  last_message String?
+  id              String   @id @default(cuid())
+  user_id         String
+  user            Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  other_user_id   String
+  last_message    String?
   last_message_at DateTime?
-  
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   @@unique([user_id, other_user_id])
   @@index([user_id])
-  @@index([updated_at])
 }
 
 model Message {
-  id           String   @id @default(cuid())
-  
-  sender_id    String
-  sender       Profile  @relation("sender", fields: [sender_id], references: [id], onDelete: Cascade)
-  
-  receiver_id  String
-  receiver     Profile  @relation("receiver", fields: [receiver_id], references: [id], onDelete: Cascade)
-  
-  content      String   @db.Text
-  
-  is_read      Boolean  @default(false)
-  read_at      DateTime?
-  
-  created_at   DateTime @default(now())
+  id          String   @id @default(cuid())
+  sender_id   String
+  sender      Profile  @relation("sender", fields: [sender_id], references: [id], onDelete: Cascade)
+  receiver_id String
+  receiver    Profile  @relation("receiver", fields: [receiver_id], references: [id], onDelete: Cascade)
+  content     String   @db.Text
+  is_read     Boolean  @default(false)
+  read_at     DateTime?
+  created_at  DateTime @default(now())
 
   @@index([sender_id])
   @@index([receiver_id])
-  @@index([is_read])
-  @@index([created_at])
 }
 
 model Review {
-  id           String   @id @default(cuid())
-  
-  author_id    String
-  author       Profile  @relation("reviews_authored", fields: [author_id], references: [id], onDelete: Cascade)
-  
+  id             String   @id @default(cuid())
+  author_id      String
+  author         Profile  @relation("reviews_authored", fields: [author_id], references: [id], onDelete: Cascade)
   target_user_id String
   target_user    Profile  @relation("reviews_received", fields: [target_user_id], references: [id], onDelete: Cascade)
-  
-  trade_id     String?
-  listing_id   String?
-  
-  rating       Int      // 1-5
-  comment      String   @db.Text
-  
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  trade_id       String?
+  listing_id     String?
+  rating         Int
+  comment        String   @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   @@index([author_id])
   @@index([target_user_id])
-  @@index([rating])
-  @@index([created_at])
 }
-

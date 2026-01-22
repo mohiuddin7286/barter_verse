@@ -158,10 +158,10 @@ const ChatSystem = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8 flex items-center gap-2">
+      <h1 className="text-3xl font-bold mb-8 flex items-center gap-2 text-foreground">
         <MessageCircle /> Direct Messaging
         {unreadCount > 0 && (
-          <span className="ml-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+          <span className="ml-2 bg-destructive text-white px-3 py-1 rounded-full text-sm font-medium">
             {unreadCount} Unread
           </span>
         )}
@@ -175,12 +175,12 @@ const ChatSystem = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
         {/* Conversations List */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
-          <div className="p-4 border-b bg-gray-50">
-            <h2 className="text-lg font-semibold mb-3">Conversations</h2>
+        <div className="card-upgrade rounded-lg overflow-hidden flex flex-col">
+          <div className="p-4 border-b" style={{ background: 'hsl(var(--section-background))' }}>
+            <h2 className="text-lg font-semibold mb-3 text-foreground">Conversations</h2>
             <button
               onClick={() => setStartNewChat(!startNewChat)}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium"
+              className="w-full btn-primary text-white py-2 rounded-lg text-sm font-medium"
             >
               {startNewChat ? '❌ Cancel' : '➕ New Chat'}
             </button>
@@ -192,11 +192,11 @@ const ChatSystem = () => {
                   placeholder="User ID"
                   value={newChatUserId}
                   onChange={(e) => setNewChatUserId(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="flex-1 px-3 py-2 border border-[hsl(var(--border))] rounded-lg text-sm text-foreground bg-card"
                 />
                 <button
                   onClick={handleStartNewChat}
-                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm"
+                  className="btn-secondary px-3 py-2 text-sm"
                 >
                   ✓
                 </button>
@@ -212,24 +212,20 @@ const ChatSystem = () => {
                   onClick={() => setSelectedConversation(conv.other_user_id)}
                   className={`p-4 border-b cursor-pointer transition ${
                     selectedConversation === conv.other_user_id
-                      ? 'bg-blue-50 border-l-4 border-l-blue-500'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-section-background border-l-4' + ' border-l-[hsl(var(--primary))]'
+                      : 'hover:bg-section-background'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <p className="font-semibold">{conv.other_user_id}</p>
-                      <p className="text-sm text-gray-600 truncate">
-                        {conv.last_message || 'No messages'}
-                      </p>
+                      <p className="text-sm text-muted-foreground truncate">{conv.last_message || 'No messages'}</p>
                       {conv.last_message_at && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(conv.last_message_at).toLocaleDateString()}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{new Date(conv.last_message_at).toLocaleDateString()}</p>
                       )}
                     </div>
                     {conv.unread_count > 0 && (
-                      <span className="ml-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+                      <span className="ml-2 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
                         {conv.unread_count}
                       </span>
                     )}
@@ -245,12 +241,12 @@ const ChatSystem = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="md:col-span-2 bg-white rounded-lg shadow-md flex flex-col">
+        <div className="md:col-span-2 card-upgrade flex flex-col">
           {selectedConversation ? (
             <>
               {/* Header */}
-              <div className="p-4 border-b bg-gray-50">
-                <h3 className="text-lg font-semibold">{selectedConversation}</h3>
+              <div className="p-4 border-b" style={{ background: 'hsl(var(--section-background))' }}>
+                <h3 className="text-lg font-semibold text-foreground">{selectedConversation}</h3>
               </div>
 
               {/* Messages */}
@@ -264,8 +260,8 @@ const ChatSystem = () => {
                       <div
                         className={`max-w-xs px-4 py-2 rounded-lg ${
                           msg.sender_id === currentUser
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-900'
+                            ? 'bg-secondary text-white'
+                            : 'bg-card text-foreground'
                         }`}
                       >
                         <p className="text-sm">{msg.content}</p>
@@ -278,7 +274,7 @@ const ChatSystem = () => {
                         {msg.sender_id === currentUser && (
                           <button
                             onClick={() => handleDeleteMessage(msg.id)}
-                            className="mt-1 text-xs hover:underline"
+                            className="mt-1 text-xs hover:underline text-muted-foreground"
                           >
                             Delete
                           </button>
@@ -295,19 +291,19 @@ const ChatSystem = () => {
               </div>
 
               {/* Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t">
+              <form onSubmit={handleSendMessage} className="p-4 border-t" style={{ background: 'hsl(var(--section-background))' }}>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    className="flex-1 px-4 py-2 border border-[hsl(var(--border))] rounded-lg focus:outline-none bg-card text-foreground"
                   />
                   <button
                     type="submit"
                     disabled={loading || !newMessage.trim()}
-                    className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+                    className="btn-primary disabled:opacity-50 flex items-center gap-2 px-6"
                   >
                     <Send size={18} />
                     Send

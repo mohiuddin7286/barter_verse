@@ -1,468 +1,236 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar } from '@/components/ui/avatar';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Heart, MessageCircle, User, Send, Trash2 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-const threads = [
-  {
-    id: 1,
-    user: 'Ammar',
-    title: 'Best practices for successful trades',
-    content: 'After completing 50+ trades, here are my top tips for smooth exchanges...',
-    likes: 24,
-    comments: 8,
-    timeAgo: '2h ago',
-  },
-  {
-    id: 2,
-    user: 'Priya',
-    title: 'Looking for graphic design tools',
-    content: 'Does anyone have Adobe CC or Figma resources they\'d like to trade?',
-    likes: 12,
-    comments: 5,
-    timeAgo: '4h ago',
-  },
-  {
-    id: 3,
-    user: 'Rahul',
-    title: 'Success story: Traded my way to a home office',
-    content: 'Started with a simple keyboard trade, now I have a complete setup!',
-    likes: 45,
-    comments: 15,
-    timeAgo: '1d ago',
-  },
-];
-
-const topTraders = [
-  { name: 'Siddu', trades: 127, coins: 5420 },
-  { name: 'Ammar', trades: 95, coins: 4230 },
-  { name: 'Priya', trades: 82, coins: 3890 },
-];
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { MessageSquare, Heart, Share2, Search, Plus, Filter, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { api } from '@/lib/api'; // Correct import
+import { useAuth } from '@/contexts/AuthContext'; 
 
 export default function Community() {
-  const [likedThreads, setLikedThreads] = useState<number[]>([]);
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<any[]>([]); // Real posts state
+  const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Chat functionality
-  const [conversations, setConversations] = useState<any[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [chatMessage, setChatMessage] = useState('');
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [startNewChat, setStartNewChat] = useState(false);
-  const [newChatUserId, setNewChatUserId] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // New Post Form State
+  const [newPost, setNewPost] = useState({ title: '', content: '', tag: 'General' });
 
-  const toggleLike = (id: number) => {
-    setLikedThreads(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
-  // Chat functions
+  // 1. Fetch Posts on Component Mount
   useEffect(() => {
-    fetchConversations();
-    fetchUnreadCount();
-    const interval = setInterval(() => {
-      fetchUnreadCount();
-      if (selectedConversation) {
-        fetchMessages(selectedConversation);
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [selectedConversation]);
+    loadPosts();
+  }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const fetchConversations = async () => {
+  const loadPosts = async () => {
     try {
-      const response = await fetch('/api/chat/conversations', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      const result = await response.json();
-
-      if (result.success) {
-        setConversations(result.data || []);
-      } else {
-        setChatMessage(`❌ ${result.message}`);
-      }
-    } catch (error: any) {
-      setChatMessage(`❌ Error: ${error.message}`);
+      setLoading(true);
+      const res = await api.getPosts();
+      // Ensure we extract the array correctly (backend usually sends { success: true, data: [...] })
+      setPosts(res.data.data || []);
+    } catch (error) {
+      console.error("Error loading posts:", error);
+      // Optional: don't show toast on load failure to avoid spamming user if offline
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchMessages = async (userId: string) => {
+  // 2. Handle Create Post
+  const handlePost = async () => {
+    if (!newPost.title.trim() || !newPost.content.trim()) {
+        return toast.error("Title and content are required");
+    }
+    
+    setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/chat/conversation/${userId}?limit=50`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      const result = await response.json();
-
-      if (result.success) {
-        setMessages(result.data.messages || []);
-      } else {
-        setChatMessage(`❌ ${result.message}`);
-      }
-    } catch (error: any) {
-      setChatMessage(`❌ Error: ${error.message}`);
+      await api.createPost(newPost);
+      toast.success("Post published successfully!");
+      
+      // Reset Form
+      setNewPost({ title: '', content: '', tag: 'General' });
+      setIsCreating(false);
+      
+      // Refresh List
+      loadPosts(); 
+    } catch (error) {
+      console.error("Create post error:", error);
+      toast.error("Failed to create post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const fetchUnreadCount = async () => {
+  const handleLike = async (postId: string) => {
     try {
-      const response = await fetch('/api/chat/unread-count', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      const result = await response.json();
+      await api.likePost(postId);
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p));
+      toast.success('Thanks for the like!');
+    } catch (error) {
+      toast.error('Failed to like post');
+      console.error('Like error:', error);
+    }
+  };
 
-      if (result.success) {
-        setUnreadCount(result.data.unread_count);
+  const handleComment = (postId: string) => {
+    toast.message('Comment feature coming soon');
+    console.debug('Comment clicked for', postId);
+  };
+
+  const handleShare = async (post: any) => {
+    const shareUrl = `${window.location.origin}/community#post-${post.id}`;
+    const shareData = {
+      title: post.title,
+      text: post.content,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('Shared');
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copied');
+      } else {
+        toast.message('Sharing not available');
       }
     } catch (error) {
-      console.error('Error fetching unread count:', error);
-    }
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedConversation || !newMessage.trim()) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch('/api/chat/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          recipient_id: selectedConversation,
-          content: newMessage,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setNewMessage('');
-        fetchMessages(selectedConversation);
-      } else {
-        setChatMessage(`❌ ${result.message}`);
-      }
-    } catch (error: any) {
-      setChatMessage(`❌ Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStartNewChat = async () => {
-    if (!newChatUserId.trim()) {
-      setChatMessage('❌ Please enter a user ID');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch('/api/chat/start-conversation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ user_id: newChatUserId }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setChatMessage('✅ Conversation started!');
-        setNewChatUserId('');
-        setStartNewChat(false);
-        fetchConversations();
-        setSelectedConversation(newChatUserId);
-      } else {
-        setChatMessage(`❌ ${result.message}`);
-      }
-    } catch (error: any) {
-      setChatMessage(`❌ Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteConversation = async (userId: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/chat/conversation/${userId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setChatMessage('✅ Conversation deleted!');
-        setSelectedConversation(null);
-        fetchConversations();
-      } else {
-        setChatMessage(`❌ ${result.message}`);
-      }
-    } catch (error: any) {
-      setChatMessage(`❌ Error: ${error.message}`);
-    } finally {
-      setLoading(false);
+      toast.error('Could not share');
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-5xl font-extrabold text-center lg:text-left tracking-tight leading-tight">Community</h1>
-            <p className="text-base leading-relaxed tracking-wide text-muted-foreground text-center lg:text-left">
-              Connect with fellow traders and share your experiences
-            </p>
+    <div className="min-h-screen bg-[#020617] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-8 animate-fade-in-up">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Community Hub</h1>
+            <p className="text-slate-400">Connect, discuss, and organize with fellow barterers.</p>
           </div>
-
-          {/* Tabs */}
-          <Tabs defaultValue="discussions" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="discussions">💬 Discussions</TabsTrigger>
-              <TabsTrigger value="messages">
-                📨 Messages {unreadCount > 0 && <span className="ml-2 text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">{unreadCount}</span>}
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Discussions Tab */}
-            <TabsContent value="discussions" className="space-y-6">
-              {threads.map(thread => (
-                <Card key={thread.id} className="bg-[#0F172A] rounded-2xl shadow-lg border border-border">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-10 h-10 bg-primary/20">
-                        <User className="w-6 h-6 text-primary" />
-                      </Avatar>
-                      <div>
-                        <div className="font-semibold">{thread.user}</div>
-                        <div className="text-sm text-muted-foreground">{thread.timeAgo}</div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-semibold">{thread.title}</h3>
-                      <p className="text-muted-foreground">{thread.content}</p>
-                    </div>
-
-                    <div className="flex items-center gap-6 pt-4 border-t border-border">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleLike(thread.id)}
-                        className="gap-2"
-                      >
-                        <Heart
-                          className={`w-5 h-5 ${likedThreads.includes(thread.id) ? 'fill-destructive text-destructive' : ''}`}
-                        />
-                        <span>{thread.likes + (likedThreads.includes(thread.id) ? 1 : 0)}</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <MessageCircle className="w-5 h-5" />
-                        <span>{thread.comments}</span>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-
-            {/* Messages Tab */}
-            <TabsContent value="messages" className="space-y-4">
-              {chatMessage && (
-                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm">
-                  {chatMessage}
-                </div>
-              )}
-
-              {/* Start New Chat */}
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setStartNewChat(!startNewChat)}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  {startNewChat ? 'Cancel' : '+ New Chat'}
-                </Button>
-              </div>
-
-              {startNewChat && (
-                <div className="p-4 border rounded-lg bg-card space-y-3">
-                  <div>
-                    <label className="text-sm font-medium block mb-2">User ID</label>
-                    <Input
-                      value={newChatUserId}
-                      onChange={(e) => setNewChatUserId(e.target.value)}
-                      placeholder="Enter user ID to start chat"
-                    />
-                  </div>
-                  <Button
-                    onClick={handleStartNewChat}
-                    disabled={loading}
-                    className="w-full bg-primary hover:bg-primary/90"
-                  >
-                    {loading ? 'Starting...' : 'Start Conversation'}
-                  </Button>
-                </div>
-              )}
-
-              {/* Conversations List */}
-              <div className="space-y-3">
-                {conversations.length > 0 ? (
-                  conversations.map((conv) => (
-                    <div
-                      key={conv.other_user_id}
-                      className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                        selectedConversation === conv.other_user_id
-                          ? 'bg-primary/20 border-primary'
-                          : 'bg-card border-border hover:border-primary/50'
-                      }`}
-                      onClick={() => {
-                        setSelectedConversation(conv.other_user_id);
-                        fetchMessages(conv.other_user_id);
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-semibold">User: {conv.other_user_id}</div>
-                          <div className="text-sm text-muted-foreground truncate">{conv.last_message_preview}</div>
-                        </div>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteConversation(conv.other_user_id);
-                          }}
-                          variant="ghost"
-                          size="sm"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">No conversations yet</p>
-                )}
-              </div>
-
-              {/* Chat Window */}
-              {selectedConversation && (
-                <Card className="bg-[#0B1120] rounded-2xl shadow-lg border border-border">
-                  <CardHeader>
-                    <CardTitle>Chat with {selectedConversation}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Messages */}
-                    <div className="h-96 overflow-y-auto space-y-3 bg-card p-4 rounded-lg border border-border">
-                      {messages.map((msg) => (
-                        <div
-                          key={msg.id}
-                          className={`flex ${msg.is_from_me ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div
-                            className={`max-w-xs p-3 rounded-lg ${
-                              msg.is_from_me
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground'
-                            }`}
-                          >
-                            <p className="text-sm">{msg.content}</p>
-                            <p className="text-xs opacity-70 mt-1">
-                              {new Date(msg.created_at).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                      <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Message Input */}
-                    <form onSubmit={handleSendMessage} className="flex gap-2">
-                      <Input
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type a message..."
-                        disabled={loading}
-                      />
-                      <Button
-                        type="submit"
-                        disabled={loading || !newMessage.trim()}
-                        size="sm"
-                      >
-                        <Send className="w-4 h-4" />
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-          </Tabs>
+          <Button 
+            onClick={() => setIsCreating(!isCreating)} 
+            className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all"
+          >
+            <Plus className="w-4 h-4 mr-2" /> 
+            {isCreating ? "Cancel Post" : "Create Post"}
+          </Button>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <Card className="bg-[#0F172A] rounded-2xl shadow-lg border border-border">
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-xl font-semibold">Top Traders</h3>
-              {topTraders.map((trader, index) => (
-                <div
-                  key={trader.name}
-                  className="flex items-center justify-between p-3 rounded-lg bg-card border border-border"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <div className="font-semibold">{trader.name}</div>
-                      <div className="text-sm text-muted-foreground">{trader.trades} trades</div>
-                    </div>
-                  </div>
-                  <div className="text-accent font-semibold">{trader.coins} BC</div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#0F172A] rounded-2xl shadow-lg border border-border">
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-xl font-semibold">Recent Topics</h3>
-              <div className="space-y-3">
-                {['Barter Tips', 'Success Stories', 'New Categories', 'Trading Safety'].map(topic => (
-                  <Button key={topic} variant="ghost" className="w-full justify-start">
-                    {topic}
-                  </Button>
-                ))}
+        {/* Create Post Form (Collapsible) */}
+        {isCreating && (
+          <div className="bg-slate-900/50 backdrop-blur-md p-6 rounded-2xl border border-emerald-500/30 animate-in fade-in slide-in-from-top-4 mb-6 shadow-xl">
+            <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                Start a Discussion
+            </h3>
+            <div className="space-y-4">
+              <div>
+                  <Input 
+                    placeholder="Topic Title" 
+                    className="bg-slate-950 border-slate-700 text-white focus:border-emerald-500/50 h-12 text-lg"
+                    value={newPost.title}
+                    onChange={e => setNewPost({...newPost, title: e.target.value})}
+                  />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div>
+                  <Textarea 
+                    placeholder="What's on your mind? Share tips, ask questions, or tell a story..." 
+                    className="bg-slate-950 border-slate-700 text-white min-h-[120px] focus:border-emerald-500/50 resize-none p-4"
+                    value={newPost.content}
+                    onChange={e => setNewPost({...newPost, content: e.target.value})}
+                  />
+              </div>
+              
+              <div className="flex justify-between items-center pt-2">
+                <Badge variant="outline" className="border-slate-700 text-slate-400">
+                    Tag: {newPost.tag}
+                </Badge>
+                <div className="flex gap-3">
+                    <Button variant="ghost" onClick={() => setIsCreating(false)} className="text-slate-400 hover:text-white">Cancel</Button>
+                    <Button onClick={handlePost} disabled={isSubmitting} className="bg-emerald-600 hover:bg-emerald-500 text-white min-w-[100px]">
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Publish"}
+                    </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Posts Feed */}
+        {loading ? (
+           <div className="flex flex-col items-center justify-center py-20 gap-4">
+               <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+               <p className="text-slate-500 text-sm animate-pulse">Loading discussions...</p>
+           </div>
+        ) : posts.length > 0 ? (
+           <div className="space-y-4 animate-fade-in-up [animation-delay:150ms]">
+             {posts.map((post) => (
+               <div key={post.id} className="group bg-slate-900/30 backdrop-blur-sm p-6 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all hover:bg-slate-900/50 hover:shadow-lg hover:shadow-emerald-900/10">
+                 <div className="flex items-start gap-4">
+                   {/* Author Avatar */}
+                   <Avatar className="border border-slate-700">
+                     <AvatarImage src={post.author?.avatar_url} />
+                     <AvatarFallback className="bg-slate-800 text-emerald-400 font-bold border border-emerald-500/20">
+                        {post.author?.username?.[0]?.toUpperCase() || 'U'}
+                     </AvatarFallback>
+                   </Avatar>
+                   
+                   <div className="flex-1 min-w-0">
+                     {/* Post Meta */}
+                     <div className="flex justify-between items-start">
+                       <div>
+                         <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-1">
+                            {post.title}
+                         </h3>
+                         <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                           <span className="font-medium text-slate-300">@{post.author?.username || 'Unknown'}</span>
+                           <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+                           <span>{new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                         </div>
+                       </div>
+                       <Badge variant="secondary" className="bg-slate-800 text-slate-400 border border-slate-700">
+                         {post.tag || "General"}
+                       </Badge>
+                     </div>
+                     
+                     {/* Post Content */}
+                     <p className="text-slate-300 mt-3 leading-relaxed text-sm whitespace-pre-wrap">
+                       {post.content}
+                     </p>
+
+                     {/* Actions Bar */}
+                     <div className="flex items-center gap-6 mt-5 pt-4 border-t border-white/5">
+                       <button className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition-colors group/like" onClick={() => handleLike(post.id)}>
+                         <Heart className="w-4 h-4 group-hover/like:scale-110 transition-transform" /> 
+                         <span>{post.likes}</span>
+                       </button>
+                       <button className="flex items-center gap-2 text-sm text-slate-400 hover:text-blue-400 transition-colors group/comment" onClick={() => handleComment(post.id)}>
+                         <MessageSquare className="w-4 h-4 group-hover/comment:scale-110 transition-transform" /> 
+                         <span>Comment</span>
+                       </button>
+                       <button className="flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors ml-auto" onClick={() => handleShare(post)}>
+                         <Share2 className="w-4 h-4" />
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             ))}
+           </div>
+        ) : (
+           <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/20">
+               <div className="p-4 bg-slate-800 rounded-full mb-4 opacity-50">
+                   <MessageSquare className="w-8 h-8 text-slate-400" />
+               </div>
+               <h3 className="text-xl font-bold text-white mb-2">No discussions yet</h3>
+               <p className="text-slate-500 max-w-sm">Be the first to start a conversation in the community!</p>
+           </div>
+        )}
       </div>
     </div>
   );

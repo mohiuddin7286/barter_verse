@@ -13,8 +13,16 @@ export interface Listing {
     id: string;
     email: string;
     display_name?: string;
+    username?: string;
+    avatar_url?: string;
     rating?: number;
+    latitude?: number;
+    longitude?: number;
   };
+  price_bc?: number;
+  verified?: boolean;
+  images?: string[];
+  location?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -23,7 +31,7 @@ interface ListingsContextType {
   listings: Listing[];
   wishlist: string[];
   isLoading: boolean;
-  fetchListings: (page?: number, category?: string, search?: string) => Promise<void>;
+  fetchListings: (page?: number, category?: string, search?: string, sort?: string, minPrice?: number, maxPrice?: number) => Promise<void>;
   createListing: (data: any) => Promise<Listing | null>;
   updateListing: (id: string, data: any) => Promise<Listing | null>;
   deleteListing: (id: string) => Promise<boolean>;
@@ -40,10 +48,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
-  const fetchListings = async (page = 1, category?: string, search?: string) => {
+  const fetchListings = async (page = 1, category?: string, search?: string, sort?: string, minPrice?: number, maxPrice?: number) => {
     try {
       setIsLoading(true);
-      const response = await api.getListings(page, 10, category, search);
+      const response = await api.getListings(page, 10, category, search, sort, minPrice, maxPrice);
       // Handle both response structures: { success, data: { listings, pagination } } and { data: listings[] }
       const responseData = response.data;
       let listingsArray = [];
@@ -126,13 +134,23 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   const isInWishlist = (id: string) => wishlist.includes(id);
 
   useEffect(() => {
-    fetchListings();
+    try {
+      fetchListings();
+    } catch (error) {
+      console.error('Error in useEffect:', error);
+      setListings([]);
+      setIsLoading(false);
+    }
   }, []);
 
   // Poll for updates every 30 seconds instead of real-time subscription
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchListings();
+      try {
+        fetchListings();
+      } catch (error) {
+        console.error('Error in polling interval:', error);
+      }
     }, 30000);
 
     return () => clearInterval(interval);
