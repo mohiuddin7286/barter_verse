@@ -4,7 +4,16 @@ import { AppError } from "../middleware/error.middleware";
 export const adminService = {
   getAllUsers: async () => {
     return prisma.profile.findMany({
-      select: { id: true, username: true, email: true, coins: true, role: true },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        coins: true,
+        role: true,
+        created_at: true,
+        rating: true,
+      },
+      orderBy: { created_at: 'desc' },
     });
   },
 
@@ -92,8 +101,18 @@ export const adminService = {
   },
 
   getAdminStats: async () => {
-    const users = await prisma.profile.count();
-    const trades = await prisma.trade.count();
-    return { totalUsers: users, totalTrades: trades };
+    const [totalUsers, totalListings, activeTrades, coinsAggregate] = await Promise.all([
+      prisma.profile.count(),
+      prisma.listing.count(),
+      prisma.trade.count({ where: { status: { in: ['PENDING', 'ESCROW_LOCKED', 'DELIVERED'] } } }),
+      prisma.coinTransaction.aggregate({ _sum: { amount: true } }),
+    ]);
+
+    return {
+      totalUsers,
+      totalListings,
+      activeTrades,
+      totalCoinsTraded: coinsAggregate._sum.amount ?? 0,
+    };
   },
 };

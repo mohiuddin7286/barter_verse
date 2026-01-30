@@ -11,6 +11,7 @@ import Community from './pages/Community';
 import TradeCenter from './pages/TradeCenter';
 import Analytics from './pages/Analytics';
 import Profile from './pages/Profile';
+import Admin from './pages/Admin';
 import EcoMap from './pages/EcoMap';         
 import Quests from './pages/Quests';         
 import Governance from './pages/Governance'; 
@@ -43,6 +44,7 @@ function App() {
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/messages" element={<Messages />} />
+                    <Route path="/admin" element={<Admin />} />
                     
                     {/* New Tabs */}
                     <Route path="/map" element={<EcoMap />} />

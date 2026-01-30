@@ -2,6 +2,7 @@ import { prisma } from "../prisma/client";
 import { Trade, TradeStatus } from "@prisma/client";
 import { AppError } from "../middleware/error.middleware";
 import { z } from "zod";
+import { NotificationService } from "./notifications.service";
 
 export const createTradeSchema = z.object({
   listing_id: z.string().uuid(),
@@ -61,6 +62,26 @@ export class TradesService {
         message: data.message,
       },
     });
+
+    // Send notification to responder
+    try {
+      const initiator = await prisma.profile.findUnique({
+        where: { id: initiatorId },
+        select: { username: true },
+      });
+
+      await NotificationService.createNotification({
+        user_id: listing.owner_id,
+        type: 'trade_offer',
+        title: 'New Trade Offer',
+        message: `${initiator?.username} sent you a trade offer for "${listing.title}"`,
+        related_id: trade.id,
+        related_type: 'trade',
+        action_url: `/trades/${trade.id}`,
+      });
+    } catch (err) {
+      console.error('Failed to send trade offer notification:', err);
+    }
 
     return trade;
   }
@@ -167,6 +188,31 @@ export class TradesService {
       },
     });
 
+    // Send notification to initiator
+    try {
+      const responder = await prisma.profile.findUnique({
+        where: { id: userId },
+        select: { username: true },
+      });
+
+      const notificationType = accepted ? 'trade_accepted' : 'trade_rejected';
+      const message = accepted
+        ? `${responder?.username} accepted your trade offer!`
+        : `${responder?.username} rejected your trade offer.`;
+
+      await NotificationService.createNotification({
+        user_id: trade.initiator_id,
+        type: notificationType,
+        title: accepted ? 'Trade Accepted!' : 'Trade Rejected',
+        message,
+        related_id: updatedTrade.id,
+        related_type: 'trade',
+        action_url: `/trades/${updatedTrade.id}`,
+      });
+    } catch (err) {
+      console.error('Failed to send trade confirmation notification:', err);
+    }
+
     return updatedTrade;
   }
 
@@ -237,6 +283,43 @@ export class TradesService {
         data: { status: TradeStatus.COMPLETED },
       });
     });
+
+    // Send notifications to both parties
+    try {
+      const initiator = await prisma.profile.findUnique({
+        where: { id: trade.initiator_id },
+        select: { username: true },
+      });
+
+      const responder = await prisma.profile.findUnique({
+        where: { id: trade.responder_id },
+        select: { username: true },
+      });
+
+      // Notify initiator
+      await NotificationService.createNotification({
+        user_id: trade.initiator_id,
+        type: 'trade_completed',
+        title: 'Trade Completed',
+        message: `Your trade with ${responder?.username} has been completed!`,
+        related_id: result.id,
+        related_type: 'trade',
+        action_url: `/trades/${result.id}`,
+      });
+
+      // Notify responder
+      await NotificationService.createNotification({
+        user_id: trade.responder_id,
+        type: 'trade_completed',
+        title: 'Trade Completed',
+        message: `Your trade with ${initiator?.username} has been completed!`,
+        related_id: result.id,
+        related_type: 'trade',
+        action_url: `/trades/${result.id}`,
+      });
+    } catch (err) {
+      console.error('Failed to send trade completion notifications:', err);
+    }
 
     return result;
   }

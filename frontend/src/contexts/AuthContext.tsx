@@ -11,6 +11,7 @@ interface User {
   rating?: number;
   coins?: number;
   created_at?: string;
+  role?: string;
 }
 
 interface AuthContextType {

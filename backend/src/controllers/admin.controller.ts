@@ -1,22 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../prisma/client';
+import { adminService } from '../services/admin.service';
+import { AppError } from '../middleware/error.middleware';
 
 export const listUsers = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const users = await prisma.profile.findMany({
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        coins: true,
-        rating: true,
-        role: true,
-        created_at: true,
-      },
-      orderBy: { created_at: 'desc' },
-    });
-
-    res.json(users);
+    const users = await adminService.getAllUsers();
+    res.json({ success: true, data: users });
   } catch (err) {
     next(err);
   }
@@ -24,18 +14,16 @@ export const listUsers = async (_req: Request, res: Response, next: NextFunction
 
 export const setUserRole = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId, role } = req.body;
+    const userId = req.body.userId || req.params.userId;
+    const { role } = req.body;
 
     if (!userId || !role) {
       return res.status(400).json({ message: 'userId and role required' });
     }
 
-    const updated = await prisma.profile.update({
-      where: { id: userId },
-      data: { role },
-    });
+    const updated = await adminService.updateUserRole(userId, role);
 
-    res.json(updated);
+    res.json({ success: true, data: updated });
   } catch (err) {
     next(err);
   }
@@ -75,6 +63,7 @@ export const adminAddCoins = async (req: Request, res: Response, next: NextFunct
     });
 
     res.json({
+      success: true,
       data: {
         user: {
           id: updated.id,
@@ -130,6 +119,7 @@ export const adminDeductCoins = async (req: Request, res: Response, next: NextFu
     });
 
     res.json({
+      success: true,
       data: {
         user: {
           id: updated.id,
@@ -170,6 +160,7 @@ export const getCoinTransactions = async (req: Request, res: Response, next: Nex
     const total = await prisma.coinTransaction.count();
 
     res.json({
+      success: true,
       data: transactions,
       pagination: {
         limit,
@@ -209,6 +200,7 @@ export const getUserTransactions = async (req: Request, res: Response, next: Nex
     });
 
     res.json({
+      success: true,
       data: {
         user: {
           id: user.id,
@@ -224,6 +216,90 @@ export const getUserTransactions = async (req: Request, res: Response, next: Nex
         },
       },
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Admin: Overview stats
+export const getAdminStats = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const stats = await adminService.getAdminStats();
+    res.json({ success: true, data: stats });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Admin: Trades moderation
+export const getAdminTrades = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const status = req.query.status as string | undefined;
+    const trades = await adminService.getAllTrades(status);
+    res.json({ success: true, data: trades });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAdminTradeById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const trade = await adminService.getTradeById(id);
+    res.json({ success: true, data: trade });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const adminAcceptTrade = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const trade = await adminService.acceptTrade(id);
+    res.json({ success: true, data: trade });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const adminRejectTrade = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const trade = await adminService.rejectTrade(id, reason);
+    res.json({ success: true, data: trade });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const adminCompleteTrade = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const trade = await adminService.completeTrade(id);
+    res.json({ success: true, data: trade });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const adminCancelTrade = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const trade = await adminService.cancelTrade(id, reason);
+    res.json({ success: true, data: trade });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) throw new AppError(400, 'userId is required');
+    const user = await adminService.getUserById(userId);
+    res.json({ success: true, data: user });
   } catch (err) {
     next(err);
   }

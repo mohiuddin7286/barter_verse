@@ -51,6 +51,16 @@ model Profile {
   comments  Comment[]
   auditLogs AuditLog[]
 
+  // --- NEW: Quests & XP System ---
+  xp_points      Int       @default(0)
+  level          Int       @default(1)
+  quest_completions QuestCompletion[] @relation("quest_completions")
+  achievements   Achievement[]
+
+  // --- NEW: Notifications System ---
+  notifications       Notification[]
+  notification_prefs  NotificationPreference?
+
   @@index([email])
   @@index([username])
 }
@@ -275,4 +285,125 @@ model Review {
 
   @@index([author_id])
   @@index([target_user_id])
+}
+
+// --- NEW: Quests & XP System ---
+
+model Quest {
+  id            String   @id @default(cuid())
+  title         String
+  description   String   @db.Text
+  category      String   // "Daily", "Weekly", "Seasonal"
+  type          String   // "Post", "Trade", "Session", "Review", "Invite"
+  
+  xp_reward     Int
+  coin_reward   Int      @default(0)
+  progress_target Int    // e.g., 5 for "Post 5 items"
+  
+  icon          String?
+  is_active     Boolean  @default(true)
+  season        String?  // "Season 1", etc.
+  
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  completions   QuestCompletion[]
+
+  @@index([category])
+  @@index([type])
+  @@index([is_active])
+}
+
+model QuestCompletion {
+  id        String   @id @default(cuid())
+  quest_id  String
+  quest     Quest    @relation(fields: [quest_id], references: [id], onDelete: Cascade)
+  
+  user_id   String
+  user      Profile  @relation("quest_completions", fields: [user_id], references: [id], onDelete: Cascade)
+  
+  progress  Int      @default(0)
+  completed Boolean  @default(false)
+  completed_at DateTime?
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([quest_id, user_id])
+  @@index([user_id])
+  @@index([quest_id])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  user_id     String
+  user        Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String   @db.Text
+  icon        String?
+  badge_color String?  // "gold", "silver", "bronze"
+  
+  earned_at   DateTime @default(now())
+
+  @@index([user_id])
+}
+
+model LevelMilestone {
+  level     Int    @id
+  xp_required Int
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  user_id     String
+  user        Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  type        String   // "trade_offer", "trade_accepted", "quest_completed", "achievement", "message", "comment", "review", "system"
+  title       String
+  message     String   @db.Text
+  
+  related_id  String?  // id of related resource (trade, quest, user, etc.)
+  related_type String? // "trade", "quest", "user", "listing", etc.
+  
+  is_read     Boolean  @default(false)
+  read_at     DateTime?
+  
+  action_url  String?  // URL to navigate to when clicked
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([is_read])
+  @@index([created_at])
+  @@index([type])
+}
+
+model NotificationPreference {
+  id          String  @id @default(cuid())
+  user_id     String  @unique
+  user        Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  // Email preferences
+  email_enabled Boolean @default(true)
+  email_trades Boolean @default(true)
+  email_quests Boolean @default(true)
+  email_messages Boolean @default(true)
+  email_reviews Boolean @default(true)
+  email_comments Boolean @default(true)
+  
+  // In-app preferences
+  in_app_enabled Boolean @default(true)
+  in_app_trades Boolean @default(true)
+  in_app_quests Boolean @default(true)
+  in_app_messages Boolean @default(true)
+  in_app_reviews Boolean @default(true)
+  in_app_comments Boolean @default(true)
+  
+  // Notification frequency (digest vs immediate)
+  frequency   String  @default("immediate") // "immediate", "daily", "weekly"
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }

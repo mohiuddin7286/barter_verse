@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { CoinsDisplay } from '@/components/CoinsDisplay';
+import { NotificationBell } from '@/components/NotificationBell';
 import { 
   Menu, X, Plus, User, LogOut, LayoutDashboard, 
   Compass, Zap, MessageSquare, Map as MapIcon, 
-  Swords, ChevronDown, Bell, Vote, Repeat, CheckCircle
+  Swords, ChevronDown, Repeat, Vote
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -95,46 +97,10 @@ export default function Navbar() {
                 </Link>
 
                 <div className="h-8 w-px bg-white/10 mx-1" />
-
-                {/* Notification Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="relative p-2 text-slate-400 hover:text-white transition-colors outline-none">
-                       <Bell className="w-5 h-5" />
-                       <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80 bg-[#0B1121]/95 backdrop-blur-xl border-slate-800 text-slate-200 mt-2 p-0 rounded-xl shadow-2xl overflow-hidden">
-                    <div className="px-4 py-3 border-b border-white/10 bg-white/5">
-                      <h3 className="font-bold text-sm text-white">Notifications</h3>
-                    </div>
-                    <div className="max-h-[300px] overflow-y-auto">
-                      <DropdownMenuItem className="p-4 cursor-pointer hover:bg-white/5 focus:bg-white/5 gap-3 items-start">
-                        <div className="mt-1 p-1.5 bg-emerald-500/20 rounded-full text-emerald-400">
-                          <CheckCircle className="w-3 h-3" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">Trade Offer Accepted!</p>
-                          <p className="text-xs text-slate-400 mt-1">Your offer for "Vintage Camera" was accepted.</p>
-                          <p className="text-[10px] text-slate-500 mt-2">2 mins ago</p>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="p-4 cursor-pointer hover:bg-white/5 focus:bg-white/5 gap-3 items-start border-t border-white/5">
-                        <div className="mt-1 p-1.5 bg-blue-500/20 rounded-full text-blue-400">
-                          <MessageSquare className="w-3 h-3" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">New Message</p>
-                          <p className="text-xs text-slate-400 mt-1">Alex sent you a message regarding your listing.</p>
-                          <p className="text-[10px] text-slate-500 mt-2">1 hour ago</p>
-                        </div>
-                      </DropdownMenuItem>
-                    </div>
-                    <Link to="/dashboard" className="block p-3 text-center text-xs font-medium text-emerald-400 hover:text-emerald-300 border-t border-white/10 bg-white/5">
-                      View all activity
-                    </Link>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Coins Display */}
+                {isAuthenticated && <CoinsDisplay />}
+                {/* Notification Bell */}
+                <NotificationBell isAuthenticated={isAuthenticated} />
 
                 {/* User Dropdown */}
                 <DropdownMenu>

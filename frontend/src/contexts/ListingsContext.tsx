@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from './AuthContext';
 
@@ -48,36 +48,22 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
-  const fetchListings = async (page = 1, category?: string, search?: string, sort?: string, minPrice?: number, maxPrice?: number) => {
+  const fetchListings = useCallback(async (page = 1, category?: string, search?: string, sort?: string, minPrice?: number, maxPrice?: number) => {
     try {
       setIsLoading(true);
       const response = await api.getListings(page, 10, category, search, sort, minPrice, maxPrice);
-      // Handle both response structures: { success, data: { listings, pagination } } and { data: listings[] }
-      const responseData = response.data;
-      let listingsArray = [];
+      // Backend returns: { success: true, data: { listings: [], pagination: {} } }
+      const { data } = response;
+      const listings = data?.data?.listings || [];
       
-      if (responseData.data?.listings) {
-        // Response structure: { data: { listings: [], pagination: {} } }
-        listingsArray = responseData.data.listings;
-      } else if (responseData.listings) {
-        // Response structure: { listings: [], pagination: {} }
-        listingsArray = responseData.listings;
-      } else if (Array.isArray(responseData.data)) {
-        // Response structure: { data: [] }
-        listingsArray = responseData.data;
-      } else if (Array.isArray(responseData)) {
-        // Response structure: []
-        listingsArray = responseData;
-      }
-      
-      setListings(Array.isArray(listingsArray) ? listingsArray : []);
+      setListings(Array.isArray(listings) ? listings : []);
     } catch (error) {
       console.error('Error fetching listings:', error);
       setListings([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const createListing = async (data: any): Promise<Listing | null> => {
     try {

@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import ListingCard from '@/components/ListingCard'; // Import ListingCard
+import { AchievementBadge } from '@/components/AchievementBadge';
 import { 
   Loader2, Edit2, Check, X, Upload, Coins, Star, Calendar, 
-  ShieldCheck, MapPin, Package, Trophy, LogOut, ArrowUpRight, ArrowDownLeft, Grid 
+  ShieldCheck, MapPin, Package, Trophy, LogOut, ArrowUpRight, ArrowDownLeft, Grid, Settings, Users, AlertCircle, Flame
 } from 'lucide-react';
 
 export default function Profile() {
@@ -24,6 +26,8 @@ export default function Profile() {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [userLevel, setUserLevel] = useState<any>(null);
+  const [userAchievements, setUserAchievements] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
@@ -32,13 +36,64 @@ export default function Profile() {
     avatar_url: user?.avatar_url || '',
   });
 
+  // Admin data states
+  const [adminStats, setAdminStats] = useState<any>(null);
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [adminTrades, setAdminTrades] = useState<any[]>([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+
   // Fetch Data on Load
   useEffect(() => {
     if (user) {
         fetchTrades();
       fetchListings(); // Fetch all listings (Context usually filters, but we filter below)
+      fetchUserLevel();
+      fetchUserAchievements();
     }
   }, [user]);
+
+  // Fetch admin data if user is admin
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchAdminData();
+    }
+  }, [user?.role]);
+
+  const fetchAdminData = async () => {
+    try {
+      setAdminLoading(true);
+      const [statsRes, usersRes, tradesRes] = await Promise.all([
+        api.getAdminStats(),
+        api.getAdminUsers(),
+        api.getAdminTrades('PENDING'),
+      ]);
+      setAdminStats(statsRes.data.data);
+      setAdminUsers(usersRes.data.data || []);
+      setAdminTrades(tradesRes.data.data || []);
+    } catch (error: any) {
+      console.error('Failed to fetch admin data:', error);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const fetchUserLevel = async () => {
+    try {
+      const res = await api.getUserLevel();
+      setUserLevel(res.data);
+    } catch (error) {
+      console.error('Failed to fetch level:', error);
+    }
+  };
+
+  const fetchUserAchievements = async () => {
+    try {
+      const res = await api.getUserAchievements();
+      setUserAchievements(res.data.achievements || []);
+    } catch (error) {
+      console.error('Failed to fetch achievements:', error);
+    }
+  };
 
   // Filter listings belonging to the current user
   const myListings = listings.filter(item => item.ownerId === user?.id || item.owner?.id === user?.id);
@@ -94,6 +149,30 @@ export default function Profile() {
       }
   };
 
+  const handleAdminRoleChange = async (userId: string, role: string) => {
+    try {
+      await api.updateUserRole(userId, role);
+      setAdminUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
+      toast.success('Role updated');
+    } catch (error: any) {
+      toast.error(`Failed: ${error.message}`);
+    }
+  };
+
+  const handleAdminTradeAction = async (tradeId: string, action: 'accept' | 'reject') => {
+    try {
+      if (action === 'accept') {
+        await api.adminAcceptTrade(tradeId);
+      } else {
+        await api.adminRejectTrade(tradeId, 'rejected by admin');
+      }
+      setAdminTrades((prev) => prev.filter((t) => t.id !== tradeId));
+      toast.success(`Trade ${action}ed`);
+    } catch (error: any) {
+      toast.error(`Failed: ${error.message}`);
+    }
+  };
+
   return (
     <div className="min-h-screen py-12 px-4 relative bg-[#020617]">
       {/* Ambience */}
@@ -135,7 +214,14 @@ export default function Profile() {
                     <div className="space-y-4">
                        <div className="flex justify-between items-start">
                           <div>
-                             <h1 className="text-3xl font-bold text-white">{user.display_name}</h1>
+                             <div className="flex items-center gap-3 mb-2">
+                                <h1 className="text-3xl font-bold text-white">{user.display_name}</h1>
+                                {user?.role === 'admin' && (
+                                   <span className="inline-flex items-center rounded-full bg-amber-500/15 text-amber-300 px-3 py-1 text-xs font-semibold border border-amber-500/30">
+                                      👑 Admin
+                                   </span>
+                                )}
+                             </div>
                              <div className="flex items-center gap-4 text-slate-400 mt-1 text-sm">
                                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Earth</span>
                                 <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Joined 2024</span>
@@ -147,6 +233,28 @@ export default function Profile() {
                           </div>
                        </div>
                        <p className="text-slate-300 italic">"{user.bio || "No bio yet."}"</p>
+                       <div className="space-y-4">
+                         {/* XP & Level Display */}
+                         {userLevel && (
+                           <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-4 rounded-xl border border-amber-500/20">
+                             <div className="flex items-center justify-between mb-3">
+                               <div className="flex items-center gap-2">
+                                 <Flame className="w-4 h-4 text-amber-400" />
+                                 <span className="text-sm font-semibold text-amber-300">Level {userLevel.level} Trader</span>
+                               </div>
+                               <span className="text-xs text-amber-300 font-bold">{userLevel.current_xp} XP</span>
+                             </div>
+                             <Progress
+                               value={(userLevel.xp_progress_to_next / userLevel.xp_for_level) * 100}
+                               className="h-2 bg-slate-800 border border-amber-500/20"
+                               indicatorClassName="bg-gradient-to-r from-amber-400 to-orange-500"
+                             />
+                             <p className="text-[10px] text-amber-300/60 mt-2">
+                               {userLevel.xp_progress_to_next} / {userLevel.xp_for_level} XP to next level
+                             </p>
+                           </div>
+                         )}
+                       </div>
                        <div className="flex flex-wrap gap-4">
                           <StatPill icon={<Coins className="w-4 h-4 text-amber-400" />} label="Balance" value={`${user.coins || 0} BC`} />
                           <StatPill icon={<Star className="w-4 h-4 text-emerald-400" />} label="Rating" value={user.rating || "5.0"} />
@@ -169,6 +277,11 @@ export default function Profile() {
               <TabsTrigger value="achievements" className="flex-1 px-6 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
                  <Trophy className="w-4 h-4 mr-2" /> Badges
               </TabsTrigger>
+              {user?.role === 'admin' && (
+                 <TabsTrigger value="admin-portal" className="flex-1 px-6 rounded-lg data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+                    <Settings className="w-4 h-4 mr-2" /> Admin Portal
+                 </TabsTrigger>
+              )}
            </TabsList>
 
            {/* --- INVENTORY TAB (NEW) --- */}
@@ -242,6 +355,158 @@ export default function Profile() {
                  </div>
               </div>
            </TabsContent>
+
+           {/* Admin Portal Tab - Only visible to admins */}
+           {user?.role === 'admin' && (
+              <TabsContent value="admin-portal" className="animate-in fade-in slide-in-from-bottom-4">
+                 <div className="glass p-8 rounded-3xl border border-white/5 space-y-6">
+                    <div className="flex items-center justify-between">
+                       <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                          <Settings className="w-6 h-6 text-amber-400" /> Admin Control Panel
+                       </h2>
+                       <span className="text-xs bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full">Restricted Access</span>
+                    </div>
+
+                    {adminLoading ? (
+                       <div className="text-center py-12 text-slate-400">
+                          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+                          Loading admin data...
+                       </div>
+                    ) : (
+                       <>
+                          {/* Stats Overview */}
+                          {adminStats && (
+                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-400 mb-1">Total Users</div>
+                                   <div className="text-2xl font-bold text-white">{adminStats.totalUsers}</div>
+                                </div>
+                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-400 mb-1">Total Listings</div>
+                                   <div className="text-2xl font-bold text-white">{adminStats.totalListings}</div>
+                                </div>
+                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-400 mb-1">Active Trades</div>
+                                   <div className="text-2xl font-bold text-white">{adminStats.activeTrades}</div>
+                                </div>
+                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-400 mb-1">Coins Traded</div>
+                                   <div className="text-2xl font-bold text-amber-400">{adminStats.totalCoinsTraded}</div>
+                                </div>
+                             </div>
+                          )}
+
+                          {/* Quick Actions */}
+                          <div className="grid md:grid-cols-2 gap-4 mb-6">
+                             <AdminActionCard
+                                icon={<Users className="w-5 h-5" />}
+                                title="User Management"
+                                desc={`${adminUsers.length} total users`}
+                                onClick={() => navigate('/admin#user-management')}
+                             />
+                             <AdminActionCard
+                                icon={<ShieldCheck className="w-5 h-5" />}
+                                title="Trade Moderation"
+                                desc={`${adminTrades.length} pending trades`}
+                                onClick={() => navigate('/admin#trade-moderation')}
+                             />
+                             <AdminActionCard
+                                icon={<AlertCircle className="w-5 h-5" />}
+                                title="Audit Logs"
+                                desc="Review system activity"
+                                onClick={() => navigate('/admin#audit-logs')}
+                             />
+                             <AdminActionCard
+                                icon={<Coins className="w-5 h-5" />}
+                                title="Coin Distribution"
+                                desc="Track and adjust rewards"
+                                onClick={() => navigate('/admin#coin-distribution')}
+                             />
+                          </div>
+
+                          {/* Recent Users */}
+                          <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4 mb-4">
+                             <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-white flex items-center gap-2">
+                                   <Users className="w-4 h-4" /> Recent Users
+                                </h3>
+                                <button onClick={() => navigate('/admin#user-management')} className="text-xs text-emerald-400 hover:underline">View All</button>
+                             </div>
+                             {adminUsers.length > 0 ? (
+                                <div className="space-y-2">
+                                   {adminUsers.slice(0, 5).map((u) => (
+                                      <div key={u.id} className="flex items-center justify-between text-sm bg-slate-900/50 p-3 rounded-lg">
+                                         <div className="flex-1">
+                                            <div className="text-white font-medium">{u.username}</div>
+                                            <div className="text-xs text-slate-400">{u.email}</div>
+                                         </div>
+                                         <div className="flex items-center gap-3">
+                                            <span className="text-xs text-slate-500">{u.coins} BC</span>
+                                            <select
+                                               className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs"
+                                               value={u.role}
+                                               onChange={(e) => handleAdminRoleChange(u.id, e.target.value)}
+                                            >
+                                               <option value="user">user</option>
+                                               <option value="admin">admin</option>
+                                            </select>
+                                         </div>
+                                      </div>
+                                   ))}
+                                </div>
+                             ) : (
+                                <p className="text-sm text-slate-500">No users found</p>
+                             )}
+                          </div>
+
+                          {/* Pending Trades */}
+                          <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4">
+                             <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-white flex items-center gap-2">
+                                   <ShieldCheck className="w-4 h-4" /> Pending Trades
+                                </h3>
+                                <button onClick={() => navigate('/admin#trade-moderation')} className="text-xs text-emerald-400 hover:underline">View All</button>
+                             </div>
+                             {adminTrades.length > 0 ? (
+                                <div className="space-y-2">
+                                   {adminTrades.slice(0, 3).map((t) => (
+                                      <div key={t.id} className="flex items-center justify-between text-sm bg-slate-900/50 p-3 rounded-lg">
+                                         <div className="flex-1">
+                                            <div className="text-white font-medium">{t.listing?.title || 'Trade'}</div>
+                                            <div className="text-xs text-slate-400">
+                                               {t.initiator?.username} → {t.responder?.username}
+                                            </div>
+                                         </div>
+                                         <div className="flex gap-2">
+                                            <button
+                                               onClick={() => handleAdminTradeAction(t.id, 'accept')}
+                                               className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs"
+                                            >
+                                               Accept
+                                            </button>
+                                            <button
+                                               onClick={() => handleAdminTradeAction(t.id, 'reject')}
+                                               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs"
+                                            >
+                                               Reject
+                                            </button>
+                                         </div>
+                                      </div>
+                                   ))}
+                                </div>
+                             ) : (
+                                <p className="text-sm text-slate-500">No pending trades</p>
+                             )}
+                          </div>
+
+                          <Button onClick={() => navigate('/admin')} className="w-full btn-primary mt-4">
+                             Open Full Admin Dashboard
+                          </Button>
+                       </>
+                    )}
+                 </div>
+              </TabsContent>
+           )}
         </Tabs>
       </div>
     </div>
@@ -258,6 +523,23 @@ function StatPill({ icon, label, value }: any) {
             <span className="text-sm font-bold text-white">{value}</span>
          </div>
       </div>
+   );
+}
+
+function AdminActionCard({ icon, title, desc, onClick }: any) {
+   return (
+      <button
+         onClick={onClick}
+         className="p-4 bg-slate-900/50 border border-amber-500/20 rounded-xl hover:bg-slate-800 hover:border-amber-500/40 transition-all text-left"
+      >
+         <div className="flex items-start gap-3">
+            <div className="text-amber-400 mt-1">{icon}</div>
+            <div>
+               <h3 className="font-semibold text-white">{title}</h3>
+               <p className="text-xs text-slate-400 mt-1">{desc}</p>
+            </div>
+         </div>
+      </button>
    );
 }
 

@@ -1,6 +1,8 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
-import { prisma } from '../prisma/client';
+import { reviewsService } from '../services/reviews.service';
+
+// ============ REVIEW CRUD OPERATIONS ============
 
 export const createReview = async (
   req: AuthRequest,
@@ -9,102 +11,60 @@ export const createReview = async (
 ) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthenticated' });
+      return res.status(401).json({ success: false, message: 'Unauthenticated' });
     }
 
-    const {
-      target_user_id,
-      trade_id,
-      listing_id,
-      rating,
-      comment,
-    } = req.body;
+    const review = await reviewsService.createReview(req.user.id, req.body);
 
-    // Validate required fields
-    if (!target_user_id || !rating || !comment) {
-      return res.status(400).json({
-        message: 'target_user_id, rating, and comment are required',
-      });
-    }
-
-    // Validate rating is between 1-5
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({
-        message: 'Rating must be between 1 and 5',
-      });
-    }
-
-    // Cannot review yourself
-    if (target_user_id === req.user.id) {
-      return res.status(400).json({
-        message: 'You cannot review yourself',
-      });
-    }
-
-    // Check if target user exists
-    const targetUser = await prisma.profile.findUnique({
-      where: { id: target_user_id },
-    });
-
-    if (!targetUser) {
-      return res.status(404).json({ message: 'Target user not found' });
-    }
-
-    // Create review
-    const review = await prisma.review.create({
-      data: {
-        author_id: req.user.id,
-        target_user_id,
-        trade_id,
-        listing_id,
-        rating,
-        comment,
-      },
-      include: {
-        author: { select: { id: true, username: true, avatar_url: true } },
-        target_user: { select: { id: true, username: true, avatar_url: true, rating: true } },
-      },
-    });
-
-    // Update target user's rating (average of all reviews)
-    const reviews = await prisma.review.findMany({
-      where: { target_user_id },
-    });
-
-    const averageRating = reviews.length > 0 
-      ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length 
-      : 5.0;
-
-    await prisma.profile.update({
-      where: { id: target_user_id },
-      data: { rating: averageRating },
-    });
-
-    res.status(201).json({ data: review });
-  } catch (err) {
-    next(err);
+    res.status(201).json({ success: true, data: review });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const getReviews = async (
+export const getReviewsForUser = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { target_user_id } = req.params;
+    const { userId } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    const reviews = await prisma.review.findMany({
-      where: { target_user_id },
-      include: {
-        author: { select: { id: true, username: true, avatar_url: true } },
+    const { reviews, total, averageRating } = await reviewsService.getReviewsForUser(userId, page, limit);
+
+    res.json({
+      success: true,
+      data: reviews,
+      stats: {
+        averageRating,
+        total,
       },
-      orderBy: { created_at: 'desc' },
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     });
+  } catch (error) {
+    next(error);
+  }
+};
 
-    res.json({ data: reviews });
-  } catch (err) {
-    next(err);
+export const getReviewById = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { reviewId } = req.params;
+    const review = await reviewsService.getReviewById(reviewId);
+
+    res.json({ success: true, data: review });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -115,20 +75,45 @@ export const getUserReviewsGiven = async (
 ) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthenticated' });
+      return res.status(401).json({ success: false, message: 'Unauthenticated' });
     }
 
-    const reviews = await prisma.review.findMany({
-      where: { author_id: req.user.id },
-      include: {
-        target_user: { select: { id: true, username: true, avatar_url: true } },
-      },
-      orderBy: { created_at: 'desc' },
-    });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    res.json({ data: reviews });
-  } catch (err) {
-    next(err);
+    const { reviews, total } = await reviewsService.getUserReviewsGiven(req.user.id, page, limit);
+
+    res.json({
+      success: true,
+      data: reviews,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateReview = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Unauthenticated' });
+    }
+
+    const { reviewId } = req.params;
+    const updatedReview = await reviewsService.updateReview(reviewId, req.user.id, req.body);
+
+    res.json({ success: true, data: updatedReview });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -139,39 +124,145 @@ export const deleteReview = async (
 ) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthenticated' });
+      return res.status(401).json({ success: false, message: 'Unauthenticated' });
     }
 
-    const { id } = req.params;
+    const { reviewId } = req.params;
+    await reviewsService.deleteReview(reviewId, req.user.id);
 
-    const review = await prisma.review.findUnique({ where: { id } });
+    res.json({ success: true, message: 'Review deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
 
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
+// ============ RATING & ANALYTICS ============
+
+export const getUserRating = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const rating = await reviewsService.getUserRating(userId);
+
+    res.json({ success: true, data: rating });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getTopRatedUsers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const users = await reviewsService.getTopRatedUsers(limit);
+
+    res.json({ success: true, data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRecentlyReviewedUsers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const users = await reviewsService.getRecentlyReviewedUsers(limit);
+
+    res.json({ success: true, data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getReviewStatistics = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const stats = await reviewsService.getReviewStatistics();
+
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const searchReviews = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || typeof q !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query is required',
+      });
     }
 
-    // Only author can delete
-    if (review.author_id !== req.user.id) {
-      return res.status(403).json({ message: 'You cannot delete this review' });
-    }
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    await prisma.review.delete({ where: { id } });
+    const { reviews, total } = await reviewsService.searchReviews(q, page, limit);
 
-    // Recalculate target user's rating
-    const reviews = await prisma.review.findMany({
-      where: { target_user_id: review.target_user_id },
+    res.json({
+      success: true,
+      data: reviews,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     });
+  } catch (error) {
+    next(error);
+  }
+};
 
-    const averageRating =
-      reviews.length > 0 ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length : 5.0;
+export const filterReviewsByRating = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const minRating = parseInt(req.query.minRating as string) || 1;
+    const maxRating = parseInt(req.query.maxRating as string) || 5;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    await prisma.profile.update({
-      where: { id: review.target_user_id },
-      data: { rating: averageRating },
+    const { reviews, total } = await reviewsService.filterReviewsByRating(
+      userId,
+      minRating,
+      maxRating,
+      page,
+      limit
+    );
+
+    res.json({
+      success: true,
+      data: reviews,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     });
-
-    res.json({ message: 'Review deleted successfully' });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };

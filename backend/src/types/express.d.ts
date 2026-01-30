@@ -1,4 +1,5 @@
 import { Profile } from '@prisma/client';
+import { Request } from 'express';
 
 declare global {
   namespace Express {
@@ -9,5 +10,9 @@ declare global {
     }
   }
 }
+
+export type AuthRequest = Request & {
+  user?: Profile;
+};
 
 export {};

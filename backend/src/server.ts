@@ -4,6 +4,8 @@ dotenv.config();
 console.log('Starting server...');
 
 import { app } from './app';
+import { initializeWebSocket } from './services/websocket.service';
+import http from 'http';
 
 console.log('App imported successfully');
 
@@ -11,8 +13,13 @@ const PORT = Number(process.env.PORT) || 5000;
 
 console.log('PORT:', PORT);
 
-const server = app.listen(PORT, () => {
+// Create HTTP server and initialize WebSocket
+const server = http.createServer(app);
+initializeWebSocket(server);
+
+server.listen(PORT, () => {
   console.log(`🔥 Backend listening on port ${PORT}`);
+  console.log('✅ WebSocket server initialized');
   console.log('Server callback executed');
 });
 

@@ -18,7 +18,7 @@ export const getMyCoins = async (
       select: { coins: true },
     });
 
-    res.json({ coins: user?.coins ?? 0 });
+    res.json({ success: true, data: { balance: user?.coins ?? 0 } });
   } catch (err) {
     next(err);
   }
@@ -37,7 +37,7 @@ export const getMyCoinTransactions = async (
       orderBy: { created_at: 'desc' },
     });
 
-    res.json(txs);
+    res.json({ success: true, data: { transactions: txs } });
   } catch (err) {
     next(err);
   }
