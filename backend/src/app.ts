@@ -16,7 +16,7 @@ import sessionsRoutes from './routes/sessions.routes';
 import chatRoutes from './routes/chat.routes';
 import reviewsRoutes from './routes/reviews.routes';
 import communityRoutes from './routes/community.routes';
-// import analyticsRoutes from './routes/analytics.routes'; // TODO: Fix schema mismatches
+import analyticsRoutes from './routes/analytics.routes';
 import questsRoutes from './routes/quests.routes';
 import notificationsRoutes from './routes/notifications.routes';
 
@@ -66,7 +66,7 @@ app.use('/api/sessions', sessionsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/community', communityRoutes);
-// app.use('/api/analytics', analyticsRoutes); // TODO: Fix schema mismatches in analytics.service.ts
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/quests', questsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 

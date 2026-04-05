@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+﻿import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { TrendingUp, Activity, PieChart as PieIcon, ArrowUpRight, DollarSign, Clock } from 'lucide-react';
@@ -29,11 +29,11 @@ export default function Analytics() {
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-white tracking-tight">Analytics Dashboard</h1>
-            <p className="text-slate-400">Real-time insights into your trading performance and market trends.</p>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Analytics Dashboard</h1>
+            <p className="text-slate-600 dark:text-slate-400">Real-time insights into your trading performance and market trends.</p>
           </div>
           <div className="flex gap-2">
-             <div className="bg-slate-900/50 border border-slate-800 px-4 py-2 rounded-lg text-sm text-slate-300">
+             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400">
                 Last Updated: <span className="text-emerald-400 font-mono">Just now</span>
              </div>
           </div>
@@ -72,7 +72,7 @@ export default function Analytics() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-slate-900/80 border border-white/10 p-1 rounded-xl w-full max-w-md">
+          <TabsList className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-1 rounded-xl w-full max-w-md">
             <TabsTrigger value="overview" className="flex-1 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Overview</TabsTrigger>
             <TabsTrigger value="categories" className="flex-1 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Categories</TabsTrigger>
             <TabsTrigger value="growth" className="flex-1 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Growth</TabsTrigger>
@@ -82,9 +82,9 @@ export default function Analytics() {
             <div className="grid lg:grid-cols-3 gap-6">
               
               {/* Main Chart */}
-              <Card className="lg:col-span-2 glass border border-white/5 shadow-xl">
+              <Card className="lg:col-span-2 glass border border-slate-200 dark:border-slate-800 shadow-xl">
                 <CardHeader>
-                  <CardTitle className="text-slate-100 flex items-center gap-2">
+                  <CardTitle className="text-slate-900 dark:text-slate-100 flex items-center gap-2">
                      <TrendingUp className="w-5 h-5 text-emerald-400" /> Trade Volume
                   </CardTitle>
                 </CardHeader>
@@ -112,9 +112,9 @@ export default function Analytics() {
               </Card>
 
               {/* Pie Chart */}
-              <Card className="glass border border-white/5 shadow-xl">
+              <Card className="glass border border-slate-200 dark:border-slate-800 shadow-xl">
                 <CardHeader>
-                  <CardTitle className="text-slate-100 flex items-center gap-2">
+                  <CardTitle className="text-slate-900 dark:text-slate-100 flex items-center gap-2">
                      <PieIcon className="w-5 h-5 text-blue-400" /> Portfolio Mix
                   </CardTitle>
                 </CardHeader>
@@ -140,13 +140,13 @@ export default function Analytics() {
                     </ResponsiveContainer>
                     {/* Center Legend Overlay */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                       <span className="text-2xl font-bold text-white">100%</span>
+                       <span className="text-2xl font-bold text-slate-900 dark:text-white">100%</span>
                        <span className="text-xs text-slate-500">DISTRIBUTION</span>
                     </div>
                   </div>
                   <div className="flex justify-center gap-4 mt-4">
                      {categoryData.map((item, idx) => (
-                        <div key={item.name} className="flex items-center gap-2 text-xs text-slate-300">
+                        <div key={item.name} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[idx] }} />
                            {item.name}
                         </div>
@@ -158,13 +158,13 @@ export default function Analytics() {
           </TabsContent>
 
           <TabsContent value="categories">
-             <div className="glass p-12 text-center border border-white/5 rounded-2xl">
+             <div className="glass p-12 text-center border border-slate-200 dark:border-slate-800 rounded-2xl">
                 <p className="text-slate-500">Detailed category breakdown module coming in v2.0</p>
              </div>
           </TabsContent>
           
           <TabsContent value="growth">
-             <div className="glass p-12 text-center border border-white/5 rounded-2xl">
+             <div className="glass p-12 text-center border border-slate-200 dark:border-slate-800 rounded-2xl">
                 <p className="text-slate-500">Growth forecasting engine initializing...</p>
              </div>
           </TabsContent>
@@ -178,7 +178,7 @@ function MetricCard({ label, value, trend, icon, color }: { label: string; value
   const isPositive = trend.startsWith('+') || trend === 'Stable';
   
   return (
-    <div className="glass p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all group">
+    <div className="glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-200 dark:border-slate-800 transition-all group">
        <div className="flex justify-between items-start mb-4">
           <div className={`p-3 rounded-xl bg-${color}-500/10 border border-${color}-500/20`}>
              {icon}
@@ -188,8 +188,8 @@ function MetricCard({ label, value, trend, icon, color }: { label: string; value
           </span>
        </div>
        <div className="space-y-1">
-          <h3 className="text-slate-400 text-sm font-medium">{label}</h3>
-          <p className="text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
+          <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium">{label}</h3>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
              {value}
           </p>
        </div>

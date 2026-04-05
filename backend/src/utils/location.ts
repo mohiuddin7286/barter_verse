@@ -52,6 +52,7 @@ export const geocodeLocation = async (
     'delhi_india': [28.7041, 77.1025],
     'mumbai_india': [19.0760, 72.8777],
     'hyderabad_india': [17.3850, 78.4867],
+    'prayagraj_india': [25.4358, 81.8463],
     'pune_india': [18.5204, 73.8567],
     'london_uk': [51.5074, -0.1278],
     'newyork_usa': [40.7128, -74.0060],

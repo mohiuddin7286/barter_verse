@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card';
+﻿import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, User, Star, Zap, Clock, ShieldCheck, Search, Filter, X } from 'lucide-react';
@@ -111,7 +111,7 @@ export default function SkillShare() {
   });
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative bg-[#020617]">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative bg-background transition-colors duration-300">
       {/* Background Ambience */}
       <div className="absolute top-0 left-0 w-full h-[500px] bg-indigo-500/10 blur-[120px] -z-10" />
 
@@ -124,26 +124,26 @@ export default function SkillShare() {
               <Zap className="w-4 h-4" />
               <span>Master New Skills</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Skill <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Exchange</span>
             </h1>
-            <p className="text-lg text-slate-400">
+            <p className="text-lg text-slate-600 dark:text-slate-400">
               Trade your expertise for knowledge. Connect with mentors and learners in the BarterVerse.
             </p>
           </div>
 
           {/* Search/Filter Bar */}
-          <div className="glass p-2 rounded-xl border border-white/10 flex gap-2 w-full md:w-auto">
+          <div className="glass p-2 rounded-xl border border-slate-200 dark:border-slate-800 flex gap-2 w-full md:w-auto">
              <div className="relative flex-1 md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <Input 
                    placeholder="Find a skill..." 
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
-                   className="pl-9 bg-slate-900/50 border-transparent text-white focus:bg-slate-900 h-10 rounded-lg"
+                   className="pl-9 bg-white dark:bg-slate-900 border-transparent text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 h-10 rounded-lg"
                 />
              </div>
-             <Button size="icon" variant="ghost" className="text-slate-400 hover:text-white" onClick={handleFilterClick}>
+             <Button size="icon" variant="ghost" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" onClick={handleFilterClick}>
                 <Filter className="w-4 h-4" />
              </Button>
           </div>
@@ -154,7 +154,7 @@ export default function SkillShare() {
            {filteredSkills.map((skill, idx) => (
             <div 
                key={skill.id} 
-               className="group relative bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/20 flex flex-col hover:-translate-y-1"
+               className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/20 flex flex-col hover:-translate-y-1"
                style={{ animationDelay: `${idx * 100}ms` }}
             >
               
@@ -178,7 +178,7 @@ export default function SkillShare() {
                       OPEN
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 backdrop-blur-md border border-white/10 text-slate-400 text-xs font-bold">
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold">
                       <Clock className="w-3 h-3" />
                       BUSY
                     </div>
@@ -186,22 +186,22 @@ export default function SkillShare() {
                 </div>
 
                 <div className="absolute bottom-4 left-4 right-4">
-                  <Badge variant="outline" className="bg-white/10 backdrop-blur-sm border-white/20 text-white mb-2 hover:bg-white/20 transition-colors">
+                  <Badge variant="outline" className="bg-white/10 backdrop-blur-sm border-white/20 text-slate-900 dark:text-white mb-2 hover:bg-white/20 transition-colors">
                     {skill.category}
                   </Badge>
-                  <h3 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1">{skill.title}</h3>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-400 transition-colors line-clamp-1">{skill.title}</h3>
                 </div>
               </div>
 
               {/* Content Area */}
               <div className="p-5 flex flex-col flex-1 gap-4">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-white/5 group-hover:border-white/10 transition-colors">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 group-hover:border-slate-300 dark:group-hover:border-slate-700 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 text-slate-300 font-bold">
+                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold">
                       {skill.provider[0]}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-200">{skill.provider}</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{skill.provider}</p>
                       <div className="flex items-center text-xs text-amber-400 font-medium">
                         <Star className="w-3 h-3 fill-amber-400 mr-1" />
                         {skill.rating}
@@ -215,7 +215,7 @@ export default function SkillShare() {
                   className={`w-full h-12 text-base font-medium transition-all duration-300 ${
                     skill.available 
                       ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20 hover:shadow-indigo-500/30' 
-                      : 'bg-slate-800 text-slate-500 cursor-not-allowed hover:bg-slate-800'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed'
                   }`}
                   disabled={!skill.available}
                   onClick={() => handleBook(skill)}
@@ -230,38 +230,38 @@ export default function SkillShare() {
 
         {/* Booking Modal */}
         <Dialog open={bookingModal.open} onOpenChange={(open) => setBookingModal({ ...bookingModal, open })}>
-          <DialogContent className="bg-[#0B1121] border-slate-800 text-white max-w-md">
+          <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl">Book Session with {bookingModal.skill?.provider}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-slate-400 block mb-2">Skill</label>
+                <label className="text-sm text-slate-600 dark:text-slate-400 block mb-2">Skill</label>
                 <input
                   type="text"
                   disabled
                   value={bookingModal.skill?.title || ''}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-600 dark:text-slate-400"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400 block mb-2">Preferred Date & Time</label>
+                <label className="text-sm text-slate-600 dark:text-slate-400 block mb-2">Preferred Date & Time</label>
                 <input
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400 block mb-2">Duration (minutes)</label>
+                <label className="text-sm text-slate-600 dark:text-slate-400 block mb-2">Duration (minutes)</label>
                 <input
                   type="number"
                   min="30"
                   max="240"
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Math.max(30, Math.min(240, parseInt(e.target.value) || 60)))}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div className="flex gap-3">
@@ -275,7 +275,7 @@ export default function SkillShare() {
                 <Button
                   onClick={handleBookingSubmit}
                   disabled={isSubmitting}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white"
                 >
                   {isSubmitting ? 'Booking...' : 'Confirm Booking'}
                 </Button>

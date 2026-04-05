@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Coins, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -75,7 +75,7 @@ export function CoinsDisplay() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md bg-slate-900 border border-slate-700">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-amber-400">
             <Coins className="w-5 h-5" />
@@ -91,20 +91,20 @@ export function CoinsDisplay() {
           <Card className="bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-500/30">
             <CardContent className="pt-6">
               <div className="text-center space-y-2">
-                <p className="text-sm text-slate-300">Your Balance</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Your Balance</p>
                 <p className="text-4xl font-bold text-amber-400">{balance}</p>
-                <p className="text-xs text-slate-400">BarterCoins</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">BarterCoins</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Recent Transactions */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-white text-sm">Recent Activity</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Recent Activity</h3>
             {isLoading ? (
-              <div className="text-center py-6 text-slate-400">Loading...</div>
+              <div className="text-center py-6 text-slate-600 dark:text-slate-400">Loading...</div>
             ) : transactions.length === 0 ? (
-              <div className="text-center py-6 text-slate-400 text-sm">
+              <div className="text-center py-6 text-slate-600 dark:text-slate-400 text-sm">
                 No transactions yet
               </div>
             ) : (
@@ -112,7 +112,7 @@ export function CoinsDisplay() {
                 {transactions.map((tx) => (
                   <div
                     key={tx.id}
-                    className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-slate-600 transition"
+                    className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-800/50 hover:border-slate-600 transition"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {tx.amount > 0 ? (
@@ -121,10 +121,10 @@ export function CoinsDisplay() {
                         <TrendingDown className="w-4 h-4 text-red-400" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                           {tx.reason}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
                           {formatDate(tx.created_at)}
                         </p>
                       </div>
@@ -155,7 +155,7 @@ export function CoinsDisplay() {
             </Button>
             <Button
               size="sm"
-              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+              className="flex-1 bg-amber-600 hover:bg-amber-700 text-slate-900 dark:text-white"
               onClick={() => setIsOpen(false)}
             >
               Close
@@ -166,3 +166,4 @@ export function CoinsDisplay() {
     </Dialog>
   );
 }
+

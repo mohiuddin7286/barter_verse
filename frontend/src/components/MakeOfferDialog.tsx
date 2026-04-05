@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,18 +62,18 @@ export default function MakeOfferDialog({ isOpen, onClose, listing }: MakeOfferD
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#0B1121] border-slate-800 text-white sm:max-w-md">
+      <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <span className="text-emerald-400">⚡</span> Make an Offer
+            <span className="text-emerald-400">ï¿½sï¿½</span> Make an Offer
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-slate-600 dark:text-slate-400">
             You are offering on <strong>{listing.title}</strong> (Listed for {listingPrice} BC)
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="coins" onValueChange={setOfferType} className="w-full mt-4">
-          <TabsList className="bg-slate-900 w-full border border-slate-800">
+          <TabsList className="bg-white dark:bg-slate-900 w-full border border-slate-200 dark:border-slate-800">
             <TabsTrigger value="coins" className="flex-1 data-[state=active]:bg-emerald-600 text-xs">
                <Coins className="w-3 h-3 mr-2" /> Pay with Coins
             </TabsTrigger>
@@ -84,7 +84,7 @@ export default function MakeOfferDialog({ isOpen, onClose, listing }: MakeOfferD
 
           <TabsContent value="coins" className="space-y-4 py-4">
              <div className="space-y-2">
-                <Label className="text-xs text-slate-400 uppercase font-bold">Your Offer (BC)</Label>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 uppercase font-bold">Your Offer (BC)</Label>
                 <div className="relative">
                    <Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400" />
                    <Input 
@@ -93,7 +93,7 @@ export default function MakeOfferDialog({ isOpen, onClose, listing }: MakeOfferD
                       placeholder={listingPrice.toString()} 
                       value={offerAmount}
                       onChange={(e) => setOfferAmount(e.target.value)}
-                      className="pl-10 bg-slate-950 border-slate-700 text-white focus:ring-emerald-500/50"
+                      className="pl-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-emerald-500/50"
                    />
                 </div>
                 <div className="flex justify-between text-xs mt-2">
@@ -112,7 +112,7 @@ export default function MakeOfferDialog({ isOpen, onClose, listing }: MakeOfferD
         </Tabs>
 
         <DialogFooter className="mt-4 gap-2 sm:gap-0">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400 hover:text-white">Cancel</Button>
+          <Button variant="ghost" onClick={onClose} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Cancel</Button>
           <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-emerald-600 hover:bg-emerald-500 text-white w-full sm:w-auto">
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ArrowLeftRight className="w-4 h-4 mr-2" />}
             Send Offer
@@ -122,3 +122,4 @@ export default function MakeOfferDialog({ isOpen, onClose, listing }: MakeOfferD
     </Dialog>
   );
 }
+

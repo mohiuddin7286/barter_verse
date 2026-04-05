@@ -6,75 +6,163 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database with example data...\n');
 
-  // Create 5 example users
+  // Create example users, including Indian localities for the map experience
   const users = [];
-  const userPasswords = ['password123', 'secure456', 'mypass789', 'test1234', 'demo5678'];
-  
-  for (let i = 1; i <= 5; i++) {
-    const hashedPassword = await bcrypt.hash(userPasswords[i - 1], 10);
+  const userSeeds = [
+    {
+      email: 'user1@example.com',
+      username: 'user1',
+      display_name: 'User 1',
+      password: 'password123',
+      city: 'Hyderabad',
+      latitude: 17.3850,
+      longitude: 78.4867,
+    },
+    {
+      email: 'user2@example.com',
+      username: 'user2',
+      display_name: 'User 2',
+      password: 'password123',
+      city: 'Prayagraj',
+      latitude: 25.4358,
+      longitude: 81.8463,
+    },
+    {
+      email: 'user3@example.com',
+      username: 'user3',
+      display_name: 'User 3',
+      password: 'password123',
+      city: 'Mumbai',
+      latitude: 19.0760,
+      longitude: 72.8777,
+    },
+    {
+      email: 'user4@example.com',
+      username: 'user4',
+      display_name: 'User 4',
+      password: 'password123',
+      city: 'Bengaluru',
+      latitude: 12.9716,
+      longitude: 77.5946,
+    },
+    {
+      email: 'user5@example.com',
+      username: 'user5',
+      display_name: 'User 5',
+      password: 'password123',
+      city: 'Kolkata',
+      latitude: 22.5726,
+      longitude: 88.3639,
+    },
+  ];
+
+  for (const [index, userSeed] of userSeeds.entries()) {
+    const hashedPassword = await bcrypt.hash(userSeed.password, 10);
     const user = await prisma.profile.upsert({
-      where: { email: `user${i}@example.com` },
-      update: {},
-      create: {
-        email: `user${i}@example.com`,
-        username: `user${i}`,
-        display_name: `User ${i}`,
+      where: { email: userSeed.email },
+      update: {
+        username: userSeed.username,
+        display_name: userSeed.display_name,
         password: hashedPassword,
-        bio: `Hi, I'm user ${i} on BarterVerse! I love trading and making exchanges.`,
-        city: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'][i - 1],
-        latitude: [40.7128, 34.0522, 41.8781, 29.7604, 33.4484][i - 1],
-        longitude: [-74.0060, -118.2437, -87.6298, -95.3698, -112.0742][i - 1],
-        avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=user${i}`,
-        coins: 1000 + i * 500,
-        rating: 4.5 + (i * 0.1),
-        level: 1 + i,
-        xp_points: 100 * i,
+        bio: `Hi, I'm ${userSeed.display_name} on BarterVerse! I love trading and making exchanges.`,
+        city: userSeed.city,
+        latitude: userSeed.latitude,
+        longitude: userSeed.longitude,
+        avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userSeed.username}`,
+        coins: 1000 + index * 500,
+        rating: 4.5 + ((index + 1) * 0.1),
+        level: 1 + (index + 1),
+        xp_points: 100 * (index + 1),
+      },
+      create: {
+        email: userSeed.email,
+        username: userSeed.username,
+        display_name: userSeed.display_name,
+        password: hashedPassword,
+        bio: `Hi, I'm ${userSeed.display_name} on BarterVerse! I love trading and making exchanges.`,
+        city: userSeed.city,
+        latitude: userSeed.latitude,
+        longitude: userSeed.longitude,
+        avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userSeed.username}`,
+        coins: 1000 + index * 500,
+        rating: 4.5 + ((index + 1) * 0.1),
+        level: 1 + (index + 1),
+        xp_points: 100 * (index + 1),
       },
     });
     users.push(user);
     console.log(`✅ Created user: ${user.username} (${user.email})`);
   }
 
+  const seededUserIds = users.map((user) => user.id);
+
+  // Reset seeded marketplace data so reruns don't keep stale locality records.
+  await prisma.notification.deleteMany({
+    where: { user_id: { in: seededUserIds } },
+  });
+
+  await prisma.review.deleteMany({
+    where: {
+      OR: [
+        { author_id: { in: seededUserIds } },
+        { target_user_id: { in: seededUserIds } },
+      ],
+    },
+  });
+
+  await prisma.trade.deleteMany({
+    where: {
+      OR: [
+        { initiator_id: { in: seededUserIds } },
+        { responder_id: { in: seededUserIds } },
+      ],
+    },
+  });
+
+  await prisma.listing.deleteMany({
+    where: { owner_id: { in: seededUserIds } },
+  });
+
   // Create example listings
   const listings = [];
   const listingData = [
     {
-      title: 'Vintage Guitar',
-      description: 'A beautiful 1990s acoustic guitar in great condition',
-      category: 'instruments',
-      location: 'New York',
-      images: ['https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=300'],
+      title: 'Hyderabad Web Design Sprint',
+      description: '3-hour website redesign session for startups and local businesses in Hyderabad.',
+      category: 'Skills',
+      location: 'Hyderabad, Banjara Hills',
+      images: ['https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300'],
       price_bc: 500,
     },
     {
-      title: 'Mountain Bike',
-      description: 'Never used mountain bike, comes with all accessories',
-      category: 'sports',
-      location: 'Los Angeles',
-      images: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300'],
+      title: 'Prayagraj Handmade Bookshelf',
+      description: 'Solid wood bookshelf made by a local carpenter in Prayagraj.',
+      category: 'Items',
+      location: 'Prayagraj, Civil Lines',
+      images: ['https://images.unsplash.com/photo-1595428774223-ef52624120e9?w=300'],
       price_bc: 750,
     },
     {
-      title: 'Laptop Stand',
+      title: 'Mumbai Laptop Stand',
       description: 'Adjustable aluminum laptop stand for desk setup',
-      category: 'electronics',
-      location: 'Chicago',
+      category: 'Items',
+      location: 'Mumbai, Andheri West',
       images: ['https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300'],
       price_bc: 200,
     },
     {
-      title: 'Coffee Maker',
+      title: 'Bengaluru Coffee Maker',
       description: 'Espresso machine with milk frother, barely used',
-      category: 'appliances',
-      location: 'Houston',
+      category: 'Items',
+      location: 'Bengaluru, Indiranagar',
       images: ['https://images.unsplash.com/photo-1517668808822-9ebb02ae2a0e?w=300'],
       price_bc: 300,
     },
     {
-      title: 'Book Collection',
+      title: 'Kolkata Book Collection',
       description: 'Collection of 20 sci-fi and fantasy novels',
-      category: 'books',
-      location: 'Phoenix',
+      category: 'Items',
+      location: 'Kolkata, Salt Lake',
       images: ['https://images.unsplash.com/photo-150784272343-583f20270319?w=300'],
       price_bc: 150,
     },
@@ -175,6 +263,130 @@ async function main() {
   }
   console.log(`✅ Created notification preferences for all users`);
 
+  // Create example quests
+  const questSeeds = [
+    {
+      title: 'Post Your First Item',
+      description: 'Create and publish one listing to the marketplace.',
+      category: 'Daily',
+      type: 'Post',
+      xp_reward: 50,
+      coin_reward: 10,
+      progress_target: 1,
+      icon: 'package',
+      season: 'Season 1',
+    },
+    {
+      title: 'Complete 3 Trades',
+      description: 'Finish three successful trades with other members.',
+      category: 'Weekly',
+      type: 'Trade',
+      xp_reward: 200,
+      coin_reward: 50,
+      progress_target: 3,
+      icon: 'repeat',
+      season: 'Season 1',
+    },
+    {
+      title: 'Join a Skill Share Session',
+      description: 'Attend or host a skill share session this season.',
+      category: 'Seasonal',
+      type: 'Session',
+      xp_reward: 350,
+      coin_reward: 75,
+      progress_target: 1,
+      icon: 'sparkles',
+      season: 'Season 1',
+    },
+  ];
+
+  const quests = [];
+  for (const questSeed of questSeeds) {
+    const existingQuest = await prisma.quest.findFirst({
+      where: { title: questSeed.title },
+    });
+
+    const quest = existingQuest ?? await prisma.quest.create({
+      data: {
+        title: questSeed.title,
+        description: questSeed.description,
+        category: questSeed.category,
+        type: questSeed.type,
+        xp_reward: questSeed.xp_reward,
+        coin_reward: questSeed.coin_reward,
+        progress_target: questSeed.progress_target,
+        icon: questSeed.icon,
+        season: questSeed.season,
+        is_active: true,
+      },
+    });
+
+    quests.push(quest);
+    console.log(`✅ Created quest: ${quest.title}`);
+  }
+
+  // Give the first user a completed quest and progress on another
+  await prisma.questCompletion.upsert({
+    where: {
+      quest_id_user_id: {
+        quest_id: quests[0].id,
+        user_id: users[0].id,
+      },
+    },
+    update: {
+      progress: quests[0].progress_target,
+      completed: true,
+      completed_at: new Date(),
+    },
+    create: {
+      quest_id: quests[0].id,
+      user_id: users[0].id,
+      progress: quests[0].progress_target,
+      completed: true,
+      completed_at: new Date(),
+    },
+  });
+
+  await prisma.questCompletion.upsert({
+    where: {
+      quest_id_user_id: {
+        quest_id: quests[1].id,
+        user_id: users[0].id,
+      },
+    },
+    update: {
+      progress: 2,
+      completed: false,
+      completed_at: null,
+    },
+    create: {
+      quest_id: quests[1].id,
+      user_id: users[0].id,
+      progress: 2,
+      completed: false,
+    },
+  });
+
+  const starterAchievement = await prisma.achievement.findFirst({
+    where: {
+      user_id: users[0].id,
+      title: 'First Quest',
+    },
+  });
+
+  if (!starterAchievement) {
+    await prisma.achievement.create({
+      data: {
+        user_id: users[0].id,
+        title: 'First Quest',
+        description: 'Complete your first quest.',
+        icon: 'trophy',
+        badge_color: 'bronze',
+      },
+    });
+  }
+  console.log(`✅ Seeded quests, progress, and a starter achievement`);
+
   console.log('\n✨ Seeding complete!\n');
   console.log('📝 Test User Credentials:');
   for (let i = 1; i <= 5; i++) {
@@ -187,6 +399,9 @@ async function main() {
   console.log(`   ✓ 3 Reviews created`);
   console.log(`   ✓ 3 Notifications created`);
   console.log(`   ✓ 5 Notification Preferences created`);
+  console.log(`   ✓ 3 Quests created`);
+  console.log(`   ✓ Quest progress seeded`);
+  console.log(`   ✓ 1 Achievement created`);
 }
 
 main()

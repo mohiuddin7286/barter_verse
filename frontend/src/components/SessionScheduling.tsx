@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Link as LinkIcon, Trash2 } from 'lucide-react';
 
 const SessionScheduling = () => {
@@ -41,10 +41,10 @@ const SessionScheduling = () => {
       if (result.success) {
         setSessions(result.data || []);
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ const SessionScheduling = () => {
     e.preventDefault();
 
     if (!formData.participant_id || !formData.skill_title || !formData.scheduled_at) {
-      setMessage('❌ Please fill all required fields');
+      setMessage('ï¿½O Please fill all required fields');
       return;
     }
 
@@ -72,7 +72,7 @@ const SessionScheduling = () => {
       const result = await response.json();
 
       if (result.success) {
-        setMessage('✅ Session created successfully!');
+        setMessage('ï¿½o. Session created successfully!');
         setShowCreateForm(false);
         setFormData({
           participant_id: '',
@@ -85,10 +85,10 @@ const SessionScheduling = () => {
         });
         fetchSessions();
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -113,14 +113,14 @@ const SessionScheduling = () => {
       const result = await response.json();
 
       if (result.success) {
-        setMessage('✅ Session status updated!');
+        setMessage('ï¿½o. Session status updated!');
         setStatusUpdate(null);
         fetchSessions();
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -139,13 +139,13 @@ const SessionScheduling = () => {
       const result = await response.json();
 
       if (result.success) {
-        setMessage('✅ Session cancelled successfully!');
+        setMessage('ï¿½o. Session cancelled successfully!');
         fetchSessions();
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -168,7 +168,7 @@ const SessionScheduling = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">📅 Skill Session Scheduling</h1>
+      <h1 className="text-3xl font-bold mb-8">ï¿½Y". Skill Session Scheduling</h1>
 
       {message && (
         <div className="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/20 text-foreground">
@@ -188,7 +188,7 @@ const SessionScheduling = () => {
                 : 'text-muted-foreground hover:text-secondary'
             }`}
           >
-            {tab === 'all' ? '📅 All Sessions' : tab === 'provider' ? '👨‍🏫 As Provider' : '👨‍🎓 As Participant'}
+            {tab === 'all' ? 'ï¿½Y". All Sessions' : tab === 'provider' ? 'ï¿½Y'ï¿½ï¿½?ï¿½ï¿½Yï¿½ï¿½ As Provider' : 'ï¿½Y'ï¿½ï¿½?ï¿½ï¿½YZ" As Participant'}
           </button>
         ))}
       </div>
@@ -198,7 +198,7 @@ const SessionScheduling = () => {
         onClick={() => setShowCreateForm(!showCreateForm)}
         className="mb-6 btn-primary"
       >
-        {showCreateForm ? '❌ Cancel' : '➕ New Session'}
+        {showCreateForm ? 'ï¿½O Cancel' : 'ï¿½z. New Session'}
       </button>
 
       {/* Create Form */}
@@ -272,7 +272,7 @@ const SessionScheduling = () => {
               disabled={loading}
               className="col-span-1 md:col-span-2 btn-primary"
             >
-              {loading ? '⏳ Creating...' : '✅ Create Session'}
+              {loading ? 'â³ Creating...' : 'ï¿½o. Create Session'}
             </button>
           </form>
         </div>
@@ -323,8 +323,8 @@ const SessionScheduling = () => {
 
               <div className="border-t pt-4 mt-4">
                 <p className="text-sm text-gray-600">
-                  👨‍🏫 Provider: <span className="font-medium">{session.provider.username}</span>
-                  {' '} • 👨‍🎓 Participant: <span className="font-medium">{session.participant.username}</span>
+                  ï¿½Y'ï¿½ï¿½?ï¿½ï¿½Yï¿½ï¿½ Provider: <span className="font-medium">{session.provider.username}</span>
+                  {' '} ï¿½?ï¿½ ï¿½Y'ï¿½ï¿½?ï¿½ï¿½YZ" Participant: <span className="font-medium">{session.participant.username}</span>
                 </p>
               </div>
 
@@ -360,7 +360,7 @@ const SessionScheduling = () => {
                   />
                   <button
                     onClick={() => handleUpdateStatus(session.id, 'COMPLETED')}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm"
+                    className="bg-green-500 hover:bg-green-600 text-slate-900 dark:text-white px-4 py-2 rounded-lg text-sm"
                   >
                     Submit Feedback
                   </button>
@@ -373,13 +373,13 @@ const SessionScheduling = () => {
                     <>
                       <button
                         onClick={() => handleUpdateStatus(session.id, 'IN_PROGRESS')}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-slate-900 dark:text-white px-4 py-2 rounded-lg text-sm"
                       >
                         Start Session
                       </button>
                       <button
                         onClick={() => handleDeleteSession(session.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
+                        className="bg-red-500 hover:bg-red-600 text-slate-900 dark:text-white px-4 py-2 rounded-lg text-sm"
                       >
                         <Trash2 size={16} className="inline mr-1" />
                         Cancel
@@ -389,7 +389,7 @@ const SessionScheduling = () => {
                   {session.status === 'IN_PROGRESS' && (
                     <button
                       onClick={() => handleUpdateStatus(session.id, 'COMPLETED')}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm"
+                      className="bg-green-500 hover:bg-green-600 text-slate-900 dark:text-white px-4 py-2 rounded-lg text-sm"
                     >
                       Mark Complete
                     </button>
@@ -402,7 +402,7 @@ const SessionScheduling = () => {
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
-            {loading ? '⏳ Loading sessions...' : 'No sessions scheduled yet.'}
+            {loading ? 'â³ Loading sessions...' : 'No sessions scheduled yet.'}
           </p>
         </div>
       )}
@@ -411,3 +411,4 @@ const SessionScheduling = () => {
 };
 
 export default SessionScheduling;
+

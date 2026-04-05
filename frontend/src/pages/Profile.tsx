@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTrade } from '@/contexts/TradeContext';
 import { useListings } from '@/contexts/ListingsContext'; // Import Listings Context
@@ -174,14 +174,14 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 relative bg-[#020617]">
+    <div className="min-h-screen py-12 px-4 relative bg-background transition-colors duration-300">
       {/* Ambience */}
       <div className="absolute top-0 left-0 w-full h-[400px] bg-gradient-to-b from-emerald-900/10 to-transparent -z-10" />
       
       <div className="max-w-5xl mx-auto space-y-8">
         
         {/* 1. Profile Header (Unchanged Logic) */}
-        <div className="glass rounded-[2.5rem] p-8 md:p-10 border border-white/5 shadow-2xl relative overflow-hidden animate-fade-in-up">
+        <div className="glass rounded-[2.5rem] p-8 md:p-10 border border-slate-200 dark:border-slate-800 shadow-2xl relative overflow-hidden animate-fade-in-up">
            <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
               <div className="flex flex-col items-center gap-4 w-full md:w-auto">
                  <div className="relative group">
@@ -192,7 +192,7 @@ export default function Profile() {
                        </AvatarFallback>
                     </Avatar>
                     {isEditing && (
-                       <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10 text-white">
+                       <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10 text-slate-900 dark:text-white">
                           <Upload className="w-8 h-8" />
                        </button>
                     )}
@@ -202,9 +202,9 @@ export default function Profile() {
 
               <div className="flex-1 w-full space-y-6">
                  {isEditing ? (
-                    <div className="bg-slate-900/50 p-6 rounded-2xl border border-white/5 space-y-4">
-                       <Input value={formData.display_name} onChange={(e) => setFormData({ ...formData, display_name: e.target.value })} placeholder="Display Name" className="bg-slate-950 border-slate-800 text-white" />
-                       <Textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="Bio" className="bg-slate-950 border-slate-800 text-white" />
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                       <Input value={formData.display_name} onChange={(e) => setFormData({ ...formData, display_name: e.target.value })} placeholder="Display Name" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white" />
+                       <Textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="Bio" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white" />
                        <div className="flex gap-2">
                           <Button onClick={handleSave} disabled={isLoading} className="btn-primary flex-1">Save</Button>
                           <Button onClick={() => setIsEditing(false)} variant="outline" className="flex-1">Cancel</Button>
@@ -215,24 +215,24 @@ export default function Profile() {
                        <div className="flex justify-between items-start">
                           <div>
                              <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-3xl font-bold text-white">{user.display_name}</h1>
+                                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{user.display_name}</h1>
                                 {user?.role === 'admin' && (
                                    <span className="inline-flex items-center rounded-full bg-amber-500/15 text-amber-300 px-3 py-1 text-xs font-semibold border border-amber-500/30">
-                                      👑 Admin
+                                      ï¿½Y'' Admin
                                    </span>
                                 )}
                              </div>
-                             <div className="flex items-center gap-4 text-slate-400 mt-1 text-sm">
+                             <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400 mt-1 text-sm">
                                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Earth</span>
                                 <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Joined 2024</span>
                              </div>
                           </div>
                           <div className="flex gap-2">
-                             <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="border-slate-700">Edit Profile</Button>
+                             <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="border-slate-200 dark:border-slate-800">Edit Profile</Button>
                              {signOut && <Button onClick={signOut} variant="ghost" size="icon" className="text-red-400"><LogOut className="w-4 h-4" /></Button>}
                           </div>
                        </div>
-                       <p className="text-slate-300 italic">"{user.bio || "No bio yet."}"</p>
+                       <p className="text-slate-600 dark:text-slate-400 italic">"{user.bio || "No bio yet."}"</p>
                        <div className="space-y-4">
                          {/* XP & Level Display */}
                          {userLevel && (
@@ -267,7 +267,7 @@ export default function Profile() {
 
         {/* 2. Tabs Section */}
         <Tabs defaultValue="inventory" className="w-full">
-           <TabsList className="bg-slate-900/50 border border-slate-800 p-1 rounded-xl mb-8">
+           <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-xl mb-8">
               <TabsTrigger value="inventory" className="flex-1 px-6 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
                  <Grid className="w-4 h-4 mr-2" /> Inventory ({myListings.length})
               </TabsTrigger>
@@ -299,9 +299,9 @@ export default function Profile() {
                     ))}
                  </div>
               ) : (
-                 <div className="glass p-12 text-center rounded-3xl border border-dashed border-slate-800">
+                 <div className="glass p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
                     <Package className="w-16 h-16 mx-auto text-slate-700 mb-4" />
-                    <h3 className="text-xl font-bold text-slate-300">Your Inventory is Empty</h3>
+                    <h3 className="text-xl font-bold text-slate-600 dark:text-slate-400">Your Inventory is Empty</h3>
                     <p className="text-slate-500 mb-6">Start listing items to trade with the community.</p>
                     <Button onClick={() => navigate('/post')} className="btn-primary">Post Item</Button>
                  </div>
@@ -315,23 +315,23 @@ export default function Profile() {
                     {trades.map((trade: any) => {
                        const isIncoming = trade.responderUserId === user.id || trade.responder_id === user.id;
                        return (
-                          <div key={trade.id} className="glass p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+                          <div key={trade.id} className="glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                              <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-full ${trade.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+                                <div className={`p-3 rounded-full ${trade.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                                    <Package className="w-6 h-6" />
                                 </div>
                                 <div>
-                                   <h4 className="font-bold text-white">{trade.listing?.title || 'Unknown Item'}</h4>
+                                   <h4 className="font-bold text-slate-900 dark:text-white">{trade.listing?.title || 'Unknown Item'}</h4>
                                    <div className="text-xs text-slate-500 mt-1 flex gap-2">
                                       <span className="uppercase">{trade.status}</span>
-                                      <span>•</span>
+                                      <span>ï¿½?ï¿½</span>
                                       <span>{new Date(trade.createdAt || trade.created_at).toLocaleDateString()}</span>
                                    </div>
                                 </div>
                              </div>
                              <div className="text-right">
-                                <div className="font-bold text-white">{trade.coin_amount} BC</div>
-                                <div className={`text-xs ${isIncoming ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                <div className="font-bold text-slate-900 dark:text-white">{trade.coin_amount} BC</div>
+                                <div className={`text-xs ${isIncoming ? 'text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>
                                    {isIncoming ? 'Received' : 'Sent'}
                                 </div>
                              </div>
@@ -346,12 +346,12 @@ export default function Profile() {
 
            {/* Achievements Tab */}
            <TabsContent value="achievements">
-              <div className="glass p-8 rounded-3xl border border-white/5">
+              <div className="glass p-8 rounded-3xl border border-slate-200 dark:border-slate-800">
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <BadgeDisplay icon="🌱" name="Eco Starter" unlocked />
-                    <BadgeDisplay icon="🤝" name="Trusted" unlocked />
-                    <BadgeDisplay icon="⚡" name="Fast Responder" />
-                    <BadgeDisplay icon="💎" name="Power Trader" />
+                    <BadgeDisplay icon="ï¿½YOï¿½" name="Eco Starter" unlocked />
+                    <BadgeDisplay icon="ï¿½Yï¿½ï¿½" name="Trusted" unlocked />
+                    <BadgeDisplay icon="ï¿½sï¿½" name="Fast Responder" />
+                    <BadgeDisplay icon="ï¿½Y'Z" name="Power Trader" />
                  </div>
               </div>
            </TabsContent>
@@ -359,16 +359,16 @@ export default function Profile() {
            {/* Admin Portal Tab - Only visible to admins */}
            {user?.role === 'admin' && (
               <TabsContent value="admin-portal" className="animate-in fade-in slide-in-from-bottom-4">
-                 <div className="glass p-8 rounded-3xl border border-white/5 space-y-6">
+                 <div className="glass p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
                     <div className="flex items-center justify-between">
-                       <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                       <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                           <Settings className="w-6 h-6 text-amber-400" /> Admin Control Panel
                        </h2>
                        <span className="text-xs bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full">Restricted Access</span>
                     </div>
 
                     {adminLoading ? (
-                       <div className="text-center py-12 text-slate-400">
+                       <div className="text-center py-12 text-slate-600 dark:text-slate-400">
                           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
                           Loading admin data...
                        </div>
@@ -377,20 +377,20 @@ export default function Profile() {
                           {/* Stats Overview */}
                           {adminStats && (
                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-                                   <div className="text-xs text-slate-400 mb-1">Total Users</div>
-                                   <div className="text-2xl font-bold text-white">{adminStats.totalUsers}</div>
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Total Users</div>
+                                   <div className="text-2xl font-bold text-slate-900 dark:text-white">{adminStats.totalUsers}</div>
                                 </div>
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-                                   <div className="text-xs text-slate-400 mb-1">Total Listings</div>
-                                   <div className="text-2xl font-bold text-white">{adminStats.totalListings}</div>
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Total Listings</div>
+                                   <div className="text-2xl font-bold text-slate-900 dark:text-white">{adminStats.totalListings}</div>
                                 </div>
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-                                   <div className="text-xs text-slate-400 mb-1">Active Trades</div>
-                                   <div className="text-2xl font-bold text-white">{adminStats.activeTrades}</div>
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Active Trades</div>
+                                   <div className="text-2xl font-bold text-slate-900 dark:text-white">{adminStats.activeTrades}</div>
                                 </div>
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-                                   <div className="text-xs text-slate-400 mb-1">Coins Traded</div>
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+                                   <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Coins Traded</div>
                                    <div className="text-2xl font-bold text-amber-400">{adminStats.totalCoinsTraded}</div>
                                 </div>
                              </div>
@@ -425,9 +425,9 @@ export default function Profile() {
                           </div>
 
                           {/* Recent Users */}
-                          <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4 mb-4">
+                          <div className="bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-xl p-4 mb-4">
                              <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-semibold text-white flex items-center gap-2">
+                                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                    <Users className="w-4 h-4" /> Recent Users
                                 </h3>
                                 <button onClick={() => navigate('/admin#user-management')} className="text-xs text-emerald-400 hover:underline">View All</button>
@@ -435,15 +435,15 @@ export default function Profile() {
                              {adminUsers.length > 0 ? (
                                 <div className="space-y-2">
                                    {adminUsers.slice(0, 5).map((u) => (
-                                      <div key={u.id} className="flex items-center justify-between text-sm bg-slate-900/50 p-3 rounded-lg">
+                                      <div key={u.id} className="flex items-center justify-between text-sm bg-white dark:bg-slate-900 p-3 rounded-lg">
                                          <div className="flex-1">
-                                            <div className="text-white font-medium">{u.username}</div>
-                                            <div className="text-xs text-slate-400">{u.email}</div>
+                                            <div className="text-slate-900 dark:text-white font-medium">{u.username}</div>
+                                            <div className="text-xs text-slate-600 dark:text-slate-400">{u.email}</div>
                                          </div>
                                          <div className="flex items-center gap-3">
                                             <span className="text-xs text-slate-500">{u.coins} BC</span>
                                             <select
-                                               className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs"
+                                               className="bg-slate-800 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs"
                                                value={u.role}
                                                onChange={(e) => handleAdminRoleChange(u.id, e.target.value)}
                                             >
@@ -460,9 +460,9 @@ export default function Profile() {
                           </div>
 
                           {/* Pending Trades */}
-                          <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4">
+                          <div className="bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
                              <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-semibold text-white flex items-center gap-2">
+                                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                    <ShieldCheck className="w-4 h-4" /> Pending Trades
                                 </h3>
                                 <button onClick={() => navigate('/admin#trade-moderation')} className="text-xs text-emerald-400 hover:underline">View All</button>
@@ -470,23 +470,23 @@ export default function Profile() {
                              {adminTrades.length > 0 ? (
                                 <div className="space-y-2">
                                    {adminTrades.slice(0, 3).map((t) => (
-                                      <div key={t.id} className="flex items-center justify-between text-sm bg-slate-900/50 p-3 rounded-lg">
+                                      <div key={t.id} className="flex items-center justify-between text-sm bg-white dark:bg-slate-900 p-3 rounded-lg">
                                          <div className="flex-1">
-                                            <div className="text-white font-medium">{t.listing?.title || 'Trade'}</div>
-                                            <div className="text-xs text-slate-400">
-                                               {t.initiator?.username} → {t.responder?.username}
+                                            <div className="text-slate-900 dark:text-white font-medium">{t.listing?.title || 'Trade'}</div>
+                                            <div className="text-xs text-slate-600 dark:text-slate-400">
+                                               {t.initiator?.username} ï¿½?' {t.responder?.username}
                                             </div>
                                          </div>
                                          <div className="flex gap-2">
                                             <button
                                                onClick={() => handleAdminTradeAction(t.id, 'accept')}
-                                               className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs"
+                                               className="bg-emerald-600 hover:bg-emerald-700 text-slate-900 dark:text-white px-3 py-1 rounded text-xs"
                                             >
                                                Accept
                                             </button>
                                             <button
                                                onClick={() => handleAdminTradeAction(t.id, 'reject')}
-                                               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs"
+                                               className="bg-red-600 hover:bg-red-700 text-slate-900 dark:text-white px-3 py-1 rounded text-xs"
                                             >
                                                Reject
                                             </button>
@@ -516,11 +516,11 @@ export default function Profile() {
 // Helpers
 function StatPill({ icon, label, value }: any) {
    return (
-      <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-xl">
+      <div className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl">
          {icon}
          <div className="flex flex-col leading-none">
             <span className="text-[10px] text-slate-500 uppercase font-bold mb-0.5">{label}</span>
-            <span className="text-sm font-bold text-white">{value}</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">{value}</span>
          </div>
       </div>
    );
@@ -530,13 +530,13 @@ function AdminActionCard({ icon, title, desc, onClick }: any) {
    return (
       <button
          onClick={onClick}
-         className="p-4 bg-slate-900/50 border border-amber-500/20 rounded-xl hover:bg-slate-800 hover:border-amber-500/40 transition-all text-left"
+         className="p-4 bg-white dark:bg-slate-900 border border-amber-500/20 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-amber-500/40 transition-all text-left"
       >
          <div className="flex items-start gap-3">
             <div className="text-amber-400 mt-1">{icon}</div>
             <div>
-               <h3 className="font-semibold text-white">{title}</h3>
-               <p className="text-xs text-slate-400 mt-1">{desc}</p>
+               <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
+               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{desc}</p>
             </div>
          </div>
       </button>
@@ -545,9 +545,10 @@ function AdminActionCard({ icon, title, desc, onClick }: any) {
 
 function BadgeDisplay({ icon, name, unlocked }: any) {
    return (
-      <div className={`text-center p-5 rounded-2xl border ${unlocked ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900/50 border-slate-800 opacity-50'}`}>
+      <div className={`text-center p-5 rounded-2xl border ${unlocked ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-50'}`}>
          <div className="text-4xl mb-3">{icon}</div>
-         <div className="font-bold text-sm text-slate-300">{name}</div>
+         <div className="font-bold text-sm text-slate-600 dark:text-slate-400">{name}</div>
       </div>
    );
 }
+

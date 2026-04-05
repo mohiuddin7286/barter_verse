@@ -1,5 +1,5 @@
 import express from 'express';
-import { authRequired } from '../middleware/auth.middleware';
+import { authRequired, adminOnly } from '../middleware/auth.middleware';
 import * as questsController from '../controllers/quests.controller';
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 // ============ QUEST MANAGEMENT (ADMIN) ============
 
 // Create quest (admin only)
-router.post('/admin/create', authRequired, questsController.createQuest);
+router.post('/admin/create', authRequired, adminOnly, questsController.createQuest);
 
 // Get all active quests by category/season
 router.get('/active', questsController.getActiveQuests);
@@ -21,7 +21,7 @@ router.get('/seasonal/:season', questsController.getSeasonalQuests);
 router.get('/:questId', questsController.getQuestById);
 
 // Toggle quest active status (admin)
-router.patch('/:questId/toggle', authRequired, questsController.toggleQuestActive);
+router.patch('/:questId/toggle', authRequired, adminOnly, questsController.toggleQuestActive);
 
 // ============ QUEST COMPLETION (USER) ============
 
@@ -60,7 +60,7 @@ router.get('/level/me', authRequired, questsController.getUserLevel);
 router.get('/level/:userId', questsController.getUserLevelByUser);
 
 // Add XP to user (admin)
-router.post('/xp/add', authRequired, questsController.addXPToUser);
+router.post('/xp/add', authRequired, adminOnly, questsController.addXPToUser);
 
 // ============ LEADERBOARDS ============
 

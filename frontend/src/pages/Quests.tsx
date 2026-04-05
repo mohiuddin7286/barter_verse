@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -98,23 +98,23 @@ export default function Quests() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen py-12 px-4 bg-[#020617] flex items-center justify-center">
+      <div className="min-h-screen py-12 px-4 bg-background transition-colors duration-300 flex items-center justify-center">
         <div className="text-center">
           <Zap className="w-12 h-12 text-amber-400 mx-auto animate-pulse mb-4" />
-          <p className="text-slate-300">Loading quests...</p>
+          <p className="text-slate-600 dark:text-slate-400">Loading quests...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-[#020617]">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300">
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[120px] -z-10" />
 
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Level Progress Card */}
         {userLevel && (
-          <div className="relative glass rounded-2xl p-8 border border-white/10 overflow-hidden">
+          <div className="relative glass rounded-2xl p-8 border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-amber-500/10 to-transparent -z-10" />
 
             <div className="flex flex-col md:flex-row justify-between items-start gap-8 md:items-end">
@@ -122,12 +122,12 @@ export default function Quests() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold border border-amber-500/20">
                   <Flame className="w-3 h-3" /> Season 1: The Pioneers
                 </div>
-                <h1 className="text-4xl md:text-5xl font-extrabold text-white">
+                <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white">
                   Level {userLevel.level} Trader
                 </h1>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm font-medium">
-                    <span className="text-slate-300">XP Progress</span>
+                    <span className="text-slate-600 dark:text-slate-400">XP Progress</span>
                     <span className="text-amber-400">{userLevel.current_xp} / {userLevel.xp_for_next_level}</span>
                   </div>
                   <Progress value={(userLevel.current_xp / userLevel.xp_for_next_level) * 100} className="h-3" />
@@ -135,12 +135,12 @@ export default function Quests() {
               </div>
 
               <div className="flex gap-4">
-                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                  <p className="text-xs text-slate-400">Total XP</p>
+                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <p className="text-xs text-slate-600 dark:text-slate-400">Total XP</p>
                   <p className="text-2xl font-bold text-amber-400 mt-1">{userLevel.total_xp}</p>
                 </div>
-                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                  <p className="text-xs text-slate-400">Completed</p>
+                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <p className="text-xs text-slate-600 dark:text-slate-400">Completed</p>
                   <p className="text-2xl font-bold text-emerald-400 mt-1">{userQuests.size}</p>
                 </div>
               </div>
@@ -157,7 +157,7 @@ export default function Quests() {
 
         {/* Tabs and Quests */}
         <div className="space-y-4">
-          <div className="flex gap-2 border-b border-slate-800">
+          <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800">
             {['daily', 'weekly', 'seasonal'].map((tab) => (
               <button
                 key={tab}
@@ -165,7 +165,7 @@ export default function Quests() {
                 className={`px-4 py-3 font-medium transition-colors capitalize ${
                   activeTab === tab
                     ? 'text-amber-400 border-b-2 border-amber-400'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {tab} Quests
@@ -175,7 +175,7 @@ export default function Quests() {
 
           <div className="grid md:grid-cols-2 gap-4">
             {getCurrentQuests().length === 0 ? (
-              <div className="md:col-span-2 text-center py-12 text-slate-400">
+              <div className="md:col-span-2 text-center py-12 text-slate-600 dark:text-slate-400">
                 <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No quests available</p>
               </div>
@@ -187,20 +187,20 @@ export default function Quests() {
                 const isCompleted = completion?.completed || false;
 
                 return (
-                  <Card key={quest.id} className={`border-2 transition-all ${isCompleted ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-slate-900/50 border-slate-700'}`}>
+                  <Card key={quest.id} className={`border-2 transition-all ${isCompleted ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg flex items-center gap-2">
                         {quest.title}
                         {isCompleted && <CheckCircle className="w-5 h-5 text-emerald-400" />}
                       </CardTitle>
-                      <p className="text-sm text-slate-400 mt-2">{quest.description}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">{quest.description}</p>
                     </CardHeader>
 
                     <CardContent className="space-y-4">
                       {!isCompleted && (
                         <div className="space-y-2">
                           <div className="flex justify-between text-xs">
-                            <span className="text-slate-300">Progress</span>
+                            <span className="text-slate-600 dark:text-slate-400">Progress</span>
                             <span className="text-amber-400">{progress} / {quest.progress_target}</span>
                           </div>
                           <Progress value={Math.min(progressPercent, 100)} className="h-2" />
@@ -208,18 +208,18 @@ export default function Quests() {
                       )}
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-800">
                           <div className="flex items-center gap-1 mb-1">
                             <Zap className="w-3 h-3 text-yellow-400" />
-                            <span className="text-xs text-slate-400">XP</span>
+                            <span className="text-xs text-slate-600 dark:text-slate-400">XP</span>
                           </div>
                           <p className="font-bold text-yellow-400">+{quest.xp_reward}</p>
                         </div>
                         {quest.coin_reward > 0 && (
-                          <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                          <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-800">
                             <div className="flex items-center gap-1 mb-1">
                               <Coins className="w-3 h-3 text-amber-400" />
-                              <span className="text-xs text-slate-400">BC</span>
+                              <span className="text-xs text-slate-600 dark:text-slate-400">BC</span>
                             </div>
                             <p className="font-bold text-amber-400">+{quest.coin_reward}</p>
                           </div>
@@ -237,7 +237,7 @@ export default function Quests() {
                               : 'bg-slate-700 cursor-not-allowed'
                         }`}
                       >
-                        {completingQuestId === quest.id ? 'Completing...' : isCompleted ? 'Completed ✓' : progress >= quest.progress_target ? 'Complete' : 'In Progress'}
+                        {completingQuestId === quest.id ? 'Completing...' : isCompleted ? 'Completed ï¿½o"' : progress >= quest.progress_target ? 'Complete' : 'In Progress'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -248,21 +248,22 @@ export default function Quests() {
         </div>
 
         {/* Info Section */}
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-400">
               <Star className="w-5 h-5" />
               How Quests Work
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-300">
-            <p>💰 <strong>Earn Rewards:</strong> Complete quests to earn XP and BarterCoins</p>
-            <p>📈 <strong>Level Up:</strong> Accumulate XP to increase your trader level</p>
-            <p>🏆 <strong>Different Schedules:</strong> Daily, Weekly, and Seasonal quests reset on different schedules</p>
-            <p>🎯 <strong>Track Progress:</strong> Watch your progress bar fill as you work towards quest objectives</p>
+          <CardContent className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <p>ï¿½Y'ï¿½ <strong>Earn Rewards:</strong> Complete quests to earn XP and BarterCoins</p>
+            <p>ï¿½Y"^ <strong>Level Up:</strong> Accumulate XP to increase your trader level</p>
+            <p>ï¿½Yï¿½? <strong>Different Schedules:</strong> Daily, Weekly, and Seasonal quests reset on different schedules</p>
+            <p>ï¿½YZï¿½ <strong>Track Progress:</strong> Watch your progress bar fill as you work towards quest objectives</p>
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+

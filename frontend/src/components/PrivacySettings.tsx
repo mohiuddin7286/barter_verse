@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { AlertCircle, Download, Trash2, LogOut } from 'lucide-react';
 
 const PrivacySettings = () => {
@@ -25,12 +25,12 @@ const PrivacySettings = () => {
         link.href = url;
         link.download = `barter_verse_data_${new Date().toISOString().split('T')[0]}.json`;
         link.click();
-        setMessage('✅ Your data has been exported successfully!');
+        setMessage('ï¿½o. Your data has been exported successfully!');
       } else {
-        setMessage(`❌ Error: ${result.message}`);
+        setMessage(`ï¿½O Error: ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -38,7 +38,7 @@ const PrivacySettings = () => {
 
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
-      setMessage('❌ Please enter your password to confirm deletion');
+      setMessage('ï¿½O Please enter your password to confirm deletion');
       return;
     }
 
@@ -56,17 +56,17 @@ const PrivacySettings = () => {
 
       if (result.success) {
         setMessage(
-          '✅ Account deleted successfully. You will be logged out in 3 seconds...'
+          'ï¿½o. Account deleted successfully. You will be logged out in 3 seconds...'
         );
         setTimeout(() => {
           localStorage.removeItem('token');
           window.location.href = '/';
         }, 3000);
       } else {
-        setMessage(`❌ Error: ${result.message}`);
+        setMessage(`ï¿½O Error: ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
       setDeletePassword('');
@@ -93,7 +93,7 @@ const PrivacySettings = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">🔐 Privacy & Data Protection</h1>
+      <h1 className="text-3xl font-bold mb-8">ï¿½Y"ï¿½ Privacy & Data Protection</h1>
 
       {message && (
         <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
@@ -106,7 +106,7 @@ const PrivacySettings = () => {
         <div className="flex items-start gap-4">
           <Download className="text-blue-500 flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h2 className="text-xl font-semibold mb-2">📥 Export Your Data (GDPR)</h2>
+            <h2 className="text-xl font-semibold mb-2">ï¿½Y"ï¿½ Export Your Data (GDPR)</h2>
             <p className="text-gray-600 mb-4">
               Download a complete copy of your profile, listings, trades, and transaction history
               in JSON format.
@@ -114,9 +114,9 @@ const PrivacySettings = () => {
             <button
               onClick={handleExportData}
               disabled={loading}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium"
+              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-slate-900 dark:text-white px-6 py-2 rounded-lg font-medium"
             >
-              {loading ? '⏳ Exporting...' : '📥 Export Data'}
+              {loading ? 'â³ Exporting...' : 'ï¿½Y"ï¿½ Export Data'}
             </button>
           </div>
         </div>
@@ -124,7 +124,7 @@ const PrivacySettings = () => {
 
       {/* Audit Logs Section */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">📋 Account Activity Log</h2>
+        <h2 className="text-xl font-semibold mb-4">ï¿½Y"< Account Activity Log</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
@@ -167,7 +167,7 @@ const PrivacySettings = () => {
           <AlertCircle className="text-red-500 flex-shrink-0 mt-1" />
           <div className="flex-1">
             <h2 className="text-xl font-semibold mb-2 text-red-700">
-              ⚠️ Delete Account (GDPR Right to be Forgotten)
+              ï¿½sï¿½ï¸ Delete Account (GDPR Right to be Forgotten)
             </h2>
             <p className="text-gray-600 mb-4">
               Your account will be anonymized and all personal information will be removed. This
@@ -177,7 +177,7 @@ const PrivacySettings = () => {
             {!showDeleteConfirm ? (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium"
+                className="bg-red-500 hover:bg-red-600 text-slate-900 dark:text-white px-6 py-2 rounded-lg font-medium"
               >
                 <Trash2 className="inline mr-2" size={18} />
                 Delete Account
@@ -196,9 +196,9 @@ const PrivacySettings = () => {
                   <button
                     onClick={handleDeleteAccount}
                     disabled={loading}
-                    className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium"
+                    className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-slate-900 dark:text-white px-6 py-2 rounded-lg font-medium"
                   >
-                    {loading ? '⏳ Deleting...' : 'Confirm Deletion'}
+                    {loading ? 'â³ Deleting...' : 'Confirm Deletion'}
                   </button>
                   <button
                     onClick={() => {
@@ -219,11 +219,11 @@ const PrivacySettings = () => {
       {/* Privacy Info */}
       <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-700">
         <p className="mb-2">
-          <strong>🔒 Data Protection:</strong> Your password is hashed using bcryptjs. Sensitive
+          <strong>ï¿½Y"' Data Protection:</strong> Your password is hashed using bcryptjs. Sensitive
           data is encrypted with AES-256-GCM encryption.
         </p>
         <p>
-          <strong>✅ GDPR Compliance:</strong> We support your right to access, export, and delete
+          <strong>ï¿½o. GDPR Compliance:</strong> We support your right to access, export, and delete
           your data at any time.
         </p>
       </div>

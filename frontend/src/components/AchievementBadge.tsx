@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card';
+﻿import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AchievementBadgeProps {
@@ -59,8 +59,8 @@ export function AchievementBadge({
               {icon}
             </div>
             <div className="text-center">
-              <p className="text-sm font-bold text-white">{title}</p>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{title}</p>
+              <p className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                 {badgeColor}
               </p>
             </div>
@@ -68,15 +68,15 @@ export function AchievementBadge({
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs">
           <div className="space-y-2">
-            <p className="font-bold text-white">{title}</p>
-            <p className="text-sm text-slate-200">{description}</p>
+            <p className="font-bold text-slate-900 dark:text-white">{title}</p>
+            <p className="text-sm text-slate-900 dark:text-slate-200">{description}</p>
             {unlocked && earnedAt && (
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Earned {formatDate(earnedAt)}
               </p>
             )}
             {!unlocked && (
-              <p className="text-xs text-slate-400 italic">Locked - Keep playing!</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 italic">Locked - Keep playing!</p>
             )}
           </div>
         </TooltipContent>
@@ -86,7 +86,7 @@ export function AchievementBadge({
 
   return (
     <Card
-      className={`border ${borderClasses[badgeColor]} ${bgClasses[badgeColor]} bg-slate-900/20 backdrop-blur-sm hover:shadow-lg transition-all`}
+      className={`border ${borderClasses[badgeColor]} ${bgClasses[badgeColor]} bg-white dark:bg-slate-900/20 backdrop-blur-sm hover:shadow-lg transition-all`}
     >
       <CardContent className="p-4 flex items-center justify-center">
         {badgeContent}
@@ -94,3 +94,4 @@ export function AchievementBadge({
     </Card>
   );
 }
+

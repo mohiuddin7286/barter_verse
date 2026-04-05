@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Users, TrendingUp, AlertCircle, CheckCircle, Trash2, ShieldCheck, Repeat, Coins, History } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -156,7 +156,7 @@ const Admin = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">👨‍💼 Admin Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8">ï¿½Y'ï¿½ï¿½?ï¿½ï¿½Y'ï¿½ Admin Dashboard</h1>
 
       {message && (
         <div className="mb-6 p-4 rounded-lg" style={{ background: 'hsl(var(--section-background))', border: '1px solid hsl(var(--border))' }}>
@@ -215,7 +215,7 @@ const Admin = () => {
 
       {/* Admin Actions */}
       <div className="card-upgrade p-6">
-        <h2 className="text-2xl font-bold mb-4">⚙️ Admin Actions</h2>
+        <h2 className="text-2xl font-bold mb-4">ï¿½sTï¸ Admin Actions</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button className="btn-primary px-6 py-3" onClick={() => handleAdminAction('users')}>
@@ -242,7 +242,7 @@ const Admin = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-muted-foreground border-b border-slate-800">
+              <tr className="text-left text-muted-foreground border-b border-slate-200 dark:border-slate-800">
                 <th className="py-2">Email</th>
                 <th className="py-2">Username</th>
                 <th className="py-2">Coins</th>
@@ -258,7 +258,7 @@ const Admin = () => {
                   <td className="py-2">{u.coins}</td>
                   <td className="py-2">
                     <select
-                      className="bg-slate-900 border border-slate-800 rounded px-2 py-1"
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-1"
                       value={u.role}
                       onChange={(e) => handleRoleChange(u.id, e.target.value)}
                     >
@@ -286,7 +286,7 @@ const Admin = () => {
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground">User</label>
             <select
-              className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-3 py-2"
               value={coinTargetUserId}
               onChange={(e) => setCoinTargetUserId(e.target.value)}
             >
@@ -300,7 +300,7 @@ const Admin = () => {
             <label className="text-sm text-muted-foreground">Amount (BC)</label>
             <input
               type="number"
-              className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-3 py-2"
               value={coinAmount}
               onChange={(e) => setCoinAmount(Number(e.target.value))}
               min={1}
@@ -310,7 +310,7 @@ const Admin = () => {
             <label className="text-sm text-muted-foreground">Reason</label>
             <input
               type="text"
-              className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-3 py-2"
               value={coinReason}
               onChange={(e) => setCoinReason(e.target.value)}
               placeholder="admin_adjustment"
@@ -347,10 +347,10 @@ const Admin = () => {
         ) : (
           <div className="space-y-3">
             {pendingTrades.slice(0, 5).map((t) => (
-              <div key={t.id} className="border border-slate-800 rounded-lg p-4 flex items-center justify-between">
+              <div key={t.id} className="border border-slate-200 dark:border-slate-800 rounded-lg p-4 flex items-center justify-between">
                 <div>
                   <p className="font-semibold">{t.listing?.title || 'Listing'} </p>
-                  <p className="text-xs text-muted-foreground">{t.initiator?.username} → {t.responder?.username}</p>
+                  <p className="text-xs text-muted-foreground">{t.initiator?.username} ï¿½?' {t.responder?.username}</p>
                 </div>
                 <div className="flex gap-2">
                   <button className="btn-primary px-3 py-1 text-xs" onClick={() => handleResolveTrade(t.id, 'accept')}>Accept</button>
@@ -379,7 +379,7 @@ const Admin = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-muted-foreground border-b border-slate-800">
+                <tr className="text-left text-muted-foreground border-b border-slate-200 dark:border-slate-800">
                   <th className="py-2">User</th>
                   <th className="py-2">Amount</th>
                   <th className="py-2">Reason</th>
@@ -412,3 +412,4 @@ const Admin = () => {
 };
 
 export default Admin;
+

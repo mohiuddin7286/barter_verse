@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { Send, MessageCircle, Trash2 } from 'lucide-react';
 
 const ChatSystem = () => {
@@ -43,10 +43,10 @@ const ChatSystem = () => {
       if (result.success) {
         setConversations(result.data || []);
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     }
   };
 
@@ -60,10 +60,10 @@ const ChatSystem = () => {
       if (result.success) {
         setMessages(result.data.messages || []);
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     }
   };
 
@@ -110,10 +110,10 @@ const ChatSystem = () => {
         fetchMessages(selectedConversation);
         fetchConversations();
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -121,7 +121,7 @@ const ChatSystem = () => {
 
   const handleStartNewChat = async () => {
     if (!newChatUserId.trim()) {
-      setMessage('❌ Please enter a user ID');
+      setMessage('ï¿½O Please enter a user ID');
       return;
     }
 
@@ -147,10 +147,10 @@ const ChatSystem = () => {
           fetchMessages(selectedConversation);
         }
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     }
   };
 
@@ -161,7 +161,7 @@ const ChatSystem = () => {
       <h1 className="text-3xl font-bold mb-8 flex items-center gap-2 text-foreground">
         <MessageCircle /> Direct Messaging
         {unreadCount > 0 && (
-          <span className="ml-2 bg-destructive text-white px-3 py-1 rounded-full text-sm font-medium">
+          <span className="ml-2 bg-destructive text-slate-900 dark:text-white px-3 py-1 rounded-full text-sm font-medium">
             {unreadCount} Unread
           </span>
         )}
@@ -180,9 +180,9 @@ const ChatSystem = () => {
             <h2 className="text-lg font-semibold mb-3 text-foreground">Conversations</h2>
             <button
               onClick={() => setStartNewChat(!startNewChat)}
-              className="w-full btn-primary text-white py-2 rounded-lg text-sm font-medium"
+              className="w-full btn-primary text-slate-900 dark:text-white py-2 rounded-lg text-sm font-medium"
             >
-              {startNewChat ? '❌ Cancel' : '➕ New Chat'}
+              {startNewChat ? 'ï¿½O Cancel' : 'ï¿½z. New Chat'}
             </button>
 
             {startNewChat && (
@@ -198,7 +198,7 @@ const ChatSystem = () => {
                   onClick={handleStartNewChat}
                   className="btn-secondary px-3 py-2 text-sm"
                 >
-                  ✓
+                  ï¿½o"
                 </button>
               </div>
             )}
@@ -225,7 +225,7 @@ const ChatSystem = () => {
                       )}
                     </div>
                     {conv.unread_count > 0 && (
-                      <span className="ml-2 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+                      <span className="ml-2 bg-destructive text-slate-900 dark:text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
                         {conv.unread_count}
                       </span>
                     )}
@@ -323,3 +323,4 @@ const ChatSystem = () => {
 };
 
 export default ChatSystem;
+

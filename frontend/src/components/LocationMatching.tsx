@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { MapPin, Users, Package } from 'lucide-react';
 
 const LocationMatching = () => {
@@ -18,7 +18,7 @@ const LocationMatching = () => {
 
   const useCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setMessage('❌ Geolocation is not supported by your browser');
+      setMessage('ï¿½O Geolocation is not supported by your browser');
       return;
     }
 
@@ -27,11 +27,11 @@ const LocationMatching = () => {
       (position) => {
         setLatitude(position.coords.latitude);
         setLongitude(position.coords.longitude);
-        setMessage('✅ Location detected!');
+        setMessage('ï¿½o. Location detected!');
         setLoading(false);
       },
       () => {
-        setMessage('❌ Failed to access your location');
+        setMessage('ï¿½O Failed to access your location');
         setLoading(false);
       }
     );
@@ -39,7 +39,7 @@ const LocationMatching = () => {
 
   const updateLocation = async () => {
     if (!country) {
-      setMessage('❌ Please enter at least country and pincode/city');
+      setMessage('ï¿½O Please enter at least country and pincode/city');
       return;
     }
 
@@ -62,12 +62,12 @@ const LocationMatching = () => {
 
       const result = await response.json();
       if (result.success) {
-        setMessage('✅ Location updated successfully!');
+        setMessage('ï¿½o. Location updated successfully!');
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ const LocationMatching = () => {
 
   const searchNearby = async () => {
     if (!country) {
-      setMessage('❌ Please set your location first');
+      setMessage('ï¿½O Please set your location first');
       return;
     }
 
@@ -93,12 +93,12 @@ const LocationMatching = () => {
       const result = await response.json();
       if (result.success) {
         setResults(result.data);
-        setMessage(`✅ Found ${result.data.length} results in your area`);
+        setMessage(`ï¿½o. Found ${result.data.length} results in your area`);
       } else {
-        setMessage(`❌ ${result.message}`);
+        setMessage(`ï¿½O ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`ï¿½O Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,7 @@ const LocationMatching = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">🗺️ Location-Based Matching</h1>
+      <h1 className="text-3xl font-bold mb-8">ï¿½Y-ï¿½ï¸ Location-Based Matching</h1>
 
       {message && (
         <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
@@ -116,7 +116,7 @@ const LocationMatching = () => {
 
       {/* Location Setup */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">📍 Set Your Location</h2>
+        <h2 className="text-xl font-semibold mb-4">ï¿½Y"ï¿½ Set Your Location</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
@@ -180,15 +180,15 @@ const LocationMatching = () => {
         <button
           onClick={updateLocation}
           disabled={loading}
-          className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white py-2 rounded-lg font-medium"
+          className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-slate-900 dark:text-white py-2 rounded-lg font-medium"
         >
-          {loading ? '⏳ Saving...' : '💾 Save Location'}
+          {loading ? 'â³ Saving...' : 'ï¿½Y'ï¿½ Save Location'}
         </button>
       </div>
 
       {/* Search Settings */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">🔍 Find Nearby</h2>
+        <h2 className="text-xl font-semibold mb-4">ï¿½Y"ï¿½ Find Nearby</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
@@ -230,9 +230,9 @@ const LocationMatching = () => {
             <button
               onClick={searchNearby}
               disabled={loading}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 rounded-lg font-medium"
+              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-slate-900 dark:text-white py-2 rounded-lg font-medium"
             >
-              {loading ? '⏳ Searching...' : '🔍 Search'}
+              {loading ? 'â³ Searching...' : 'ï¿½Y"ï¿½ Search'}
             </button>
           </div>
         </div>
@@ -255,11 +255,11 @@ const LocationMatching = () => {
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">{result.username}</h3>
                     <p className="text-gray-600">
-                      ⭐ {result.rating.toFixed(1)} • 📍 {result.distance.toFixed(1)} km away
+                      â­ {result.rating.toFixed(1)} ï¿½?ï¿½ ï¿½Y"ï¿½ {result.distance.toFixed(1)} km away
                     </p>
                     {result.city && (
                       <p className="text-sm text-gray-500">
-                        📌 {result.city}, {result.country}
+                        ï¿½Y"O {result.city}, {result.country}
                       </p>
                     )}
                     {result.listings.length > 0 && (
@@ -291,11 +291,11 @@ const LocationMatching = () => {
                 <p className="text-gray-600 text-sm mt-2">{result.description}</p>
                 <div className="mt-4 flex justify-between items-center">
                   <span className="text-sm font-medium text-blue-600">{result.category}</span>
-                  <span className="text-sm text-gray-500">📍 {result.distance.toFixed(1)} km</span>
+                  <span className="text-sm text-gray-500">ï¿½Y"ï¿½ {result.distance.toFixed(1)} km</span>
                 </div>
                 <div className="mt-3 pt-3 border-t">
                   <p className="text-sm">
-                    📌 {result.owner.username} (⭐ {result.owner.rating.toFixed(1)})
+                    ï¿½Y"O {result.owner.username} (â­ {result.owner.rating.toFixed(1)})
                   </p>
                 </div>
               </div>

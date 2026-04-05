@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+﻿import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -49,18 +49,18 @@ export default function ListingModal({ listing, isOpen, onClose }: ListingModalP
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl p-0 bg-[#0B1121] border-slate-800 text-slate-200 overflow-hidden h-[90vh] md:h-auto md:max-h-[85vh] flex flex-col md:flex-row gap-0">
+      <DialogContent className="max-w-4xl p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 overflow-hidden h-[90vh] md:h-auto md:max-h-[85vh] flex flex-col md:flex-row gap-0">
           
           {/* Close Button (Mobile friendly) */}
           <button 
              onClick={onClose} 
-             className="absolute right-4 top-4 z-50 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-colors"
+             className="absolute right-4 top-4 z-50 p-2 bg-black/50 backdrop-blur-md rounded-full text-slate-900 dark:text-white hover:bg-white/20 transition-colors"
           >
              <X className="w-5 h-5" />
           </button>
 
           {/* LEFT: Image Gallery */}
-          <div className="w-full md:w-1/2 h-64 md:h-auto bg-slate-900 relative group">
+          <div className="w-full md:w-1/2 h-64 md:h-auto bg-white dark:bg-slate-900 relative group">
              <img 
                src={listing.images?.[0] || 'https://images.unsplash.com/photo-1556740758-90de374c12ad'} 
                alt={listing.title} 
@@ -69,14 +69,14 @@ export default function ListingModal({ listing, isOpen, onClose }: ListingModalP
              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1121] to-transparent md:hidden" />
              
              {/* Floating Price Badge */}
-             <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 px-4 py-2 bg-black/60 backdrop-blur-xl rounded-xl border border-white/10 flex items-center gap-2">
+             <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 px-4 py-2 bg-black/60 backdrop-blur-xl rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-emerald-400 font-bold text-lg">{listing.price_bc} BC</span>
              </div>
           </div>
 
           {/* RIGHT: Content & Actions */}
-          <div className="w-full md:w-1/2 flex flex-col h-full bg-[#0B1121]">
+          <div className="w-full md:w-1/2 flex flex-col h-full bg-white dark:bg-slate-900">
              <ScrollArea className="flex-1 p-6 md:p-8">
                 <div className="space-y-6">
                    
@@ -92,8 +92,8 @@ export default function ListingModal({ listing, isOpen, onClose }: ListingModalP
                             </Badge>
                          )}
                       </div>
-                      <h2 className="text-3xl font-extrabold text-white leading-tight mb-2">{listing.title}</h2>
-                      <div className="flex items-center text-slate-400 text-sm gap-4">
+                      <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-tight mb-2">{listing.title}</h2>
+                      <div className="flex items-center text-slate-600 dark:text-slate-400 text-sm gap-4">
                          <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {listing.location || 'Remote'}</span>
                          <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> Posted 2d ago</span>
                       </div>
@@ -102,21 +102,21 @@ export default function ListingModal({ listing, isOpen, onClose }: ListingModalP
                    {/* Description */}
                    <div className="space-y-2">
                       <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Description</h3>
-                      <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">
                          {listing.description || 'No detailed description provided by the seller.'}
                       </p>
                    </div>
 
                    {/* Seller Info Card */}
-                   <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 flex items-center gap-4">
-                      <Avatar className="w-12 h-12 border-2 border-slate-700">
+                   <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                      <Avatar className="w-12 h-12 border-2 border-slate-200 dark:border-slate-800">
                          <AvatarImage src={listing.owner?.avatar_url} />
-                         <AvatarFallback className="bg-slate-800 text-slate-400">
+                         <AvatarFallback className="bg-slate-800 text-slate-600 dark:text-slate-400">
                             <User className="w-6 h-6" />
                          </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                         <div className="font-bold text-white text-sm">Seller Info</div>
+                         <div className="font-bold text-slate-900 dark:text-white text-sm">Seller Info</div>
                          <div className="text-xs text-slate-500">Member since 2024</div>
                       </div>
                       <div className="text-right">
@@ -130,8 +130,8 @@ export default function ListingModal({ listing, isOpen, onClose }: ListingModalP
              </ScrollArea>
 
              {/* Action Footer */}
-             <div className="p-6 border-t border-slate-800 bg-[#0B1121] z-10 flex gap-3">
-                <Button variant="outline" className="flex-1 border-slate-700 hover:bg-slate-800 text-slate-300" onClick={handleShare}>
+             <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex gap-3">
+                <Button variant="outline" className="flex-1 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400" onClick={handleShare}>
                    <Share2 className="w-4 h-4 mr-2" /> Share
                 </Button>
                 

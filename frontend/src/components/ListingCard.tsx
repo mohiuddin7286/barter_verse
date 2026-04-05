@@ -1,4 +1,4 @@
-import { Heart, MapPin, Coins, CheckCircle, ArrowRight, Star, User, MoreVertical, Edit, Trash2, EyeOff } from 'lucide-react';
+﻿import { Heart, MapPin, Coins, CheckCircle, ArrowRight, Star, User, MoreVertical, Edit, Trash2, EyeOff } from 'lucide-react';
 import { useListings } from '@/contexts/ListingsContext';
 import { useAuth } from '@/contexts/AuthContext'; // Import Auth to check ownership
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ export default function ListingCard({ listing, onViewDetails, onEdit, onDelete }
     'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
 
   return (
-    <div className="group relative bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-900/20 flex flex-col h-full">
+    <div className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-900/20 flex flex-col h-full">
       
       {/* 1. Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -58,18 +58,18 @@ export default function ListingCard({ listing, onViewDetails, onEdit, onDelete }
           <div className="absolute top-3 right-3 z-20">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="p-2 rounded-full bg-slate-950/50 backdrop-blur-md border border-white/10 hover:bg-white hover:text-black transition-all text-white">
+                <button className="p-2 rounded-full bg-white dark:bg-slate-900 backdrop-blur-md border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-900 dark:text-white">
                   <MoreVertical className="w-4 h-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-200">
-                <DropdownMenuItem onClick={() => onViewDetails(listing)} className="cursor-pointer hover:bg-slate-800">
+              <DropdownMenuContent align="end" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                <DropdownMenuItem onClick={() => onViewDetails(listing)} className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800">
                    View Public Page
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit?.(listing); }} className="cursor-pointer hover:bg-slate-800">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit?.(listing); }} className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800">
                   <Edit className="w-4 h-4 mr-2" /> Edit Listing
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="cursor-pointer hover:bg-slate-800 text-slate-400">
+                <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
                   <EyeOff className="w-4 h-4 mr-2" /> Archive
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-800" />
@@ -86,10 +86,10 @@ export default function ListingCard({ listing, onViewDetails, onEdit, onDelete }
           // If Visitor: Show Wishlist Heart
           <button
             onClick={(e) => { e.stopPropagation(); toggleWishlist(listing.id); }}
-            className="absolute top-3 right-3 p-2 rounded-full bg-slate-950/50 backdrop-blur-md border border-white/10 hover:bg-white hover:text-red-500 transition-all group/heart z-20"
+            className="absolute top-3 right-3 p-2 rounded-full bg-white dark:bg-slate-900 backdrop-blur-md border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-500 transition-all group/heart z-20"
           >
             <Heart
-              className={`w-4 h-4 ${inWishlist ? 'fill-red-500 text-red-500' : 'text-slate-300 group-hover/heart:text-red-500'}`}
+              className={`w-4 h-4 ${inWishlist ? 'fill-red-500 text-red-500' : 'text-slate-600 dark:text-slate-400 group-hover/heart:text-red-500'}`}
             />
           </button>
         )}
@@ -104,7 +104,7 @@ export default function ListingCard({ listing, onViewDetails, onEdit, onDelete }
 
         {/* Price Tag Overlay */}
         <div className="absolute bottom-3 right-3">
-             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur border border-amber-500/30 shadow-lg">
+             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur border border-amber-500/30 shadow-lg">
                 <Coins className="w-3.5 h-3.5 text-amber-400" />
                 <span className="text-sm font-bold text-amber-100">{coins} BC</span>
              </div>
@@ -126,26 +126,26 @@ export default function ListingCard({ listing, onViewDetails, onEdit, onDelete }
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-bold text-slate-100 mb-2 line-clamp-1 group-hover:text-emerald-400 transition-colors">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2 line-clamp-1 group-hover:text-emerald-400 transition-colors">
             {listing.title}
         </h3>
         
         {/* Description */}
-        <p className="text-sm text-slate-400 line-clamp-2 mb-4 flex-1 min-h-[40px]">
+        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-4 flex-1 min-h-[40px]">
             {listing.description || 'No description provided.'}
         </p>
 
         {/* User Info Section */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-800 mb-4">
+        <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800 mb-4">
             <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-full bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+                <div className="h-6 w-6 rounded-full bg-slate-800 border border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center shrink-0">
                     {ownerAvatar ? (
                         <img src={ownerAvatar} alt={ownerName} className="h-full w-full object-cover" />
                     ) : (
-                        <User className="w-3 h-3 text-slate-400" />
+                        <User className="w-3 h-3 text-slate-600 dark:text-slate-400" />
                     )}
                 </div>
-                <span className="text-xs text-slate-300 font-medium truncate max-w-[100px]">
+                <span className="text-xs text-slate-600 dark:text-slate-400 font-medium truncate max-w-[100px]">
                     {isOwner ? 'You' : `@${ownerName}`}
                 </span>
             </div>
@@ -160,14 +160,14 @@ export default function ListingCard({ listing, onViewDetails, onEdit, onDelete }
             <Button 
                 onClick={() => onEdit?.(listing)} 
                 variant="outline"
-                className="w-full border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800"
+                className="w-full border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
             >
                 <Edit className="w-4 h-4 mr-2" /> Manage Listing
             </Button>
         ) : (
             <Button 
                 onClick={() => onViewDetails(listing)} 
-                className="w-full bg-slate-800 hover:bg-emerald-600 text-white border border-slate-700 hover:border-emerald-500 transition-all group/btn"
+                className="w-full bg-slate-900 dark:bg-slate-800 hover:bg-emerald-600 text-white border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-all group/btn"
             >
                 View Details
                 <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />

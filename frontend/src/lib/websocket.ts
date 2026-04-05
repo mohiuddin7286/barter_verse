@@ -1,4 +1,4 @@
-import io, { Socket } from 'socket.io-client';
+﻿import io, { Socket } from 'socket.io-client';
 
 interface Message {
   id: string;
@@ -60,13 +60,13 @@ export class ChatWebSocketClient {
 
     // ============ CONNECTION EVENTS ============
     this.socket.on('connect', () => {
-      console.log('✅ WebSocket connected');
+      console.log('âœ… WebSocket connected');
       this.isConnected = true;
       this.connectionHandlers.forEach((handler) => handler());
     });
 
     this.socket.on('disconnect', () => {
-      console.log('❌ WebSocket disconnected');
+      console.log('âŒ WebSocket disconnected');
       this.isConnected = false;
       this.disconnectionHandlers.forEach((handler) => handler());
     });
@@ -78,12 +78,12 @@ export class ChatWebSocketClient {
 
     // ============ MESSAGE EVENTS ============
     this.socket.on('receive_message', (message: Message) => {
-      console.log('📨 Received message:', message);
+      console.log('ðŸ“¨ Received message:', message);
       this.messageHandlers.forEach((handler) => handler(message));
     });
 
     this.socket.on('message_deleted', (payload: { messageId: string }) => {
-      console.log('🗑️  Message deleted:', payload.messageId);
+      console.log('ðŸ—‘ï¸  Message deleted:', payload.messageId);
       // Emit as a special deletion event
       this.messageHandlers.forEach((handler) =>
         handler({
@@ -98,22 +98,22 @@ export class ChatWebSocketClient {
 
     // ============ TYPING EVENTS ============
     this.socket.on('user_typing', (user: TypingUser) => {
-      console.log('⌨️  User typing:', user);
+      console.log('âŒ¨ï¸  User typing:', user);
       this.typingHandlers.forEach((handler) => handler(user));
     });
 
     this.socket.on('user_viewing_conversation', (payload: { userId: string; isViewing: boolean }) => {
-      console.log('👁️  User viewing:', payload);
+      console.log('ðŸ‘ï¸  User viewing:', payload);
     });
 
     // ============ USER STATUS EVENTS ============
     this.socket.on('user_online_status', (status: UserStatus) => {
-      console.log('🟢 User status:', status);
+      console.log('ðŸŸ¢ User status:', status);
       this.userStatusHandlers.forEach((handler) => handler(status));
     });
 
     this.socket.on('messages_read', (payload: { userId: string }) => {
-      console.log('✅ Messages read by:', payload.userId);
+      console.log('âœ… Messages read by:', payload.userId);
     });
   }
 

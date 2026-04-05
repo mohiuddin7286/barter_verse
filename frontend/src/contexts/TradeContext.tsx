@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from './AuthContext';
 import { useCoins } from './CoinContext';
@@ -185,7 +185,7 @@ export function TradeProvider({ children }: { children: ReactNode }) {
       try { await coinContext.fetchBalance(); await coinContext.fetchTransactions(); } catch {}
       
       toast({
-        title: 'Trade Completed! 🎉',
+        title: 'Trade Completed! ðŸŽ‰',
         description: 'Funds released. Please rate your partner.',
         className: 'bg-blue-600 text-white border-none',
       });

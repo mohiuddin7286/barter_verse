@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef } from 'react';
+﻿import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 
@@ -38,8 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedToken = localStorage.getItem('auth_token');
     const storedUser = localStorage.getItem('user');
     
-    console.log('🔐 AuthContext init - storedToken:', storedToken ? `${storedToken.substring(0, 20)}...` : 'null');
-    console.log('👤 AuthContext init - storedUser:', storedUser ? 'exists' : 'null');
+    console.log('ðŸ” AuthContext init - storedToken:', storedToken ? `${storedToken.substring(0, 20)}...` : 'null');
+    console.log('ðŸ‘¤ AuthContext init - storedUser:', storedUser ? 'exists' : 'null');
     
     if (storedToken && storedUser) {
       try {
@@ -47,9 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         api.setToken(storedToken);
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
-        console.log('✅ Auth restored from localStorage');
+        console.log('âœ… Auth restored from localStorage');
       } catch (error) {
-        console.error('❌ Failed to restore auth from localStorage:', error);
+        console.error('âŒ Failed to restore auth from localStorage:', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
         api.setToken(null);
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       // No stored auth, clear api token
       api.setToken(null);
-      console.log('❌ No stored auth in localStorage');
+      console.log('âŒ No stored auth in localStorage');
     }
     
     initializeRef.current = true;

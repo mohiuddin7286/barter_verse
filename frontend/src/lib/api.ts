@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+﻿import axios, { AxiosInstance } from 'axios';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -22,7 +22,7 @@ class ApiClient {
       if (activeToken) {
         config.headers.Authorization = `Bearer ${activeToken}`;
       } else {
-        console.log(`📤 Request to ${config.url} WITHOUT token`);
+        console.log(`ðŸ“¤ Request to ${config.url} WITHOUT token`);
       }
       return config;
     });

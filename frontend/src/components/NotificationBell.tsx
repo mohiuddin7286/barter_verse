@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { Bell, X, Check, Trash2, AlertCircle } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -122,18 +122,18 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ isAuthentica
       case 'trade_offer':
       case 'trade_accepted':
       case 'trade_completed':
-        return <span className="text-blue-400">💼</span>;
+        return <span className="text-blue-400">ï¿½Y'ï¿½</span>;
       case 'quest_completed':
       case 'achievement':
-        return <span className="text-amber-400">⭐</span>;
+        return <span className="text-amber-400">â­</span>;
       case 'message':
-        return <span className="text-green-400">💬</span>;
+        return <span className="text-green-400">ï¿½Y'ï¿½</span>;
       case 'review':
-        return <span className="text-purple-400">⭐</span>;
+        return <span className="text-purple-400">â­</span>;
       case 'comment':
-        return <span className="text-orange-400">💭</span>;
+        return <span className="text-orange-400">ï¿½Y'ï¿½</span>;
       default:
-        return <span className="text-gray-400">ℹ️</span>;
+        return <span className="text-gray-400">ï¿½"ï¿½ï¸</span>;
     }
   };
 
@@ -169,7 +169,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ isAuthentica
 
         {/* Unread Badge */}
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+          <span className="absolute top-1 right-1 bg-red-500 text-slate-900 dark:text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -180,10 +180,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ isAuthentica
         <div className="absolute right-0 mt-2 w-96 bg-gray-900 border border-gray-700/50 rounded-xl shadow-2xl z-50">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700/50">
-            <h3 className="text-sm font-semibold text-white">Notifications</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Notifications</h3>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -224,7 +224,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ isAuthentica
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                           {notification.title}
                         </p>
                         <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">
@@ -268,7 +268,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ isAuthentica
                 href="/notifications"
                 className="text-xs text-amber-400 hover:text-amber-300 font-semibold"
               >
-                View all notifications →
+                View all notifications ï¿½?'
               </a>
             </div>
           )}
@@ -279,3 +279,4 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ isAuthentica
 };
 
 export default NotificationBell;
+

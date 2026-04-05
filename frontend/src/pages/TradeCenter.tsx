@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useTrade, Trade } from '@/contexts/TradeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ export default function TradeCenter() {
   const historyTrades = trades.filter(t => ['COMPLETED', 'REJECTED', 'DISPUTED'].includes(t.status));
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-[#020617] relative">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 relative">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] -z-10" />
       
       <div className="max-w-5xl mx-auto space-y-8">
@@ -33,8 +33,8 @@ export default function TradeCenter() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end gap-6 animate-fade-in-up">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Trade Control Center</h1>
-            <p className="text-slate-400">Manage your active negotiations and secure escrow exchanges.</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Trade Control Center</h1>
+            <p className="text-slate-600 dark:text-slate-400">Manage your active negotiations and secure escrow exchanges.</p>
           </div>
           
           <div className="glass px-6 py-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex items-center gap-4">
@@ -43,31 +43,31 @@ export default function TradeCenter() {
              </div>
              <div>
                 <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Active Escrow</div>
-                <div className="text-xl font-bold text-white">{activeEscrowAmount} BC <span className="text-xs text-slate-400 font-normal">Locked</span></div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">{activeEscrowAmount} BC <span className="text-xs text-slate-600 dark:text-slate-400 font-normal">Locked</span></div>
              </div>
           </div>
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="active" onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-slate-900/80 border border-slate-800 p-1 rounded-xl mb-6">
-            <TabsTrigger value="active" className="flex-1 rounded-lg text-slate-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all font-medium">
+          <TabsList className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-1 rounded-xl mb-6">
+            <TabsTrigger value="active" className="flex-1 rounded-lg text-slate-600 dark:text-slate-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all font-medium">
                Active Trades ({activeTrades.length})
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex-1 rounded-lg text-slate-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all font-medium">
+            <TabsTrigger value="history" className="flex-1 rounded-lg text-slate-600 dark:text-slate-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all font-medium">
                History
             </TabsTrigger>
           </TabsList>
 
           <div className="space-y-4">
              {isLoading ? (
-                <div className="text-center py-20 text-slate-400 animate-pulse">Loading secure data...</div>
+                <div className="text-center py-20 text-slate-600 dark:text-slate-400 animate-pulse">Loading secure data...</div>
              ) : (activeTab === 'active' ? activeTrades : historyTrades).length === 0 ? (
-                <div className="text-center py-20 glass rounded-3xl border border-dashed border-slate-800">
+                <div className="text-center py-20 glass rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
                    <Package className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                   <h3 className="text-lg font-medium text-slate-300">No trades found</h3>
-                   <p className="text-slate-400 mb-6">Start a conversation to initiate a trade.</p>
-                   <Link to="/explore"><Button variant="outline" className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800">Browse Listings</Button></Link>
+                   <h3 className="text-lg font-medium text-slate-600 dark:text-slate-400">No trades found</h3>
+                   <p className="text-slate-600 dark:text-slate-400 mb-6">Start a conversation to initiate a trade.</p>
+                   <Link to="/explore"><Button variant="outline" className="border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">Browse Listings</Button></Link>
                 </div>
              ) : (
                 (activeTab === 'active' ? activeTrades : historyTrades).map((trade) => (
@@ -104,7 +104,7 @@ function TradeCard({ trade, currentUserId, actions }: { trade: Trade, currentUse
    };
 
    return (
-      <div className="glass p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-emerald-500/30 transition-all bg-[#0B1121]/50">
+      <div className="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 relative overflow-hidden group hover:border-emerald-500/30 transition-all bg-white dark:bg-slate-900">
          {/* Status Line */}
          <div className={`absolute left-0 top-0 bottom-0 w-1 ${
             trade.status === 'COMPLETED' ? 'bg-emerald-500' : 
@@ -124,7 +124,7 @@ function TradeCard({ trade, currentUserId, actions }: { trade: Trade, currentUse
                         trade.status === 'ESCROW_LOCKED' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                         trade.status === 'DELIVERED' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                         trade.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        'bg-slate-800 text-slate-300 border-slate-600'
+                        'bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-600'
                      }`}>
                         {trade.status.replace('_', ' ')}
                      </span>
@@ -139,29 +139,29 @@ function TradeCard({ trade, currentUserId, actions }: { trade: Trade, currentUse
                         {isIncoming ? 'Received' : 'Sent'}
                      </span>
 
-                     <span className="text-xs text-slate-400 font-medium">
+                     <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                         {trade.createdAt ? formatDate(trade.createdAt) : 'Just now'}
                      </span>
                   </div>
                </div>
 
-               <div className="flex items-center justify-between p-4 bg-slate-900/80 rounded-2xl border border-white/5">
+               <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-900/80 rounded-2xl border border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
-                        <User className="w-5 h-5 text-slate-300" />
+                     <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-800">
+                        <User className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                      </div>
                      <div>
-                        <div className="text-sm font-bold text-white">
+                        <div className="text-sm font-bold text-slate-900 dark:text-white">
                             {partner?.display_name || partner?.username || 'Trading Partner'}
                         </div>
-                        <div className="text-xs text-slate-400">Partner</div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400">Partner</div>
                      </div>
                   </div>
                   
                   <ArrowRight className="w-5 h-5 text-slate-500" />
                   
                   <div className="text-right">
-                     <div className="text-sm font-bold text-white truncate max-w-[150px]">
+                     <div className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[150px]">
                         {trade.listing?.title || 'Unknown Item'}
                      </div>
                      <div className="text-xs text-emerald-400 font-bold">
@@ -189,9 +189,9 @@ function TradeCard({ trade, currentUserId, actions }: { trade: Trade, currentUse
                   </>
                )}
                {trade.status === 'PENDING' && !isIncoming && (
-                   <div className="text-center p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                      <Clock className="w-6 h-6 text-slate-400 mx-auto mb-2 animate-pulse" />
-                      <div className="text-sm text-slate-300">Waiting for response</div>
+                   <div className="text-center p-4 rounded-xl bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+                      <Clock className="w-6 h-6 text-slate-600 dark:text-slate-400 mx-auto mb-2 animate-pulse" />
+                      <div className="text-sm text-slate-600 dark:text-slate-400">Waiting for response</div>
                    </div>
                )}
 
@@ -208,7 +208,7 @@ function TradeCard({ trade, currentUserId, actions }: { trade: Trade, currentUse
                            <Package className="w-4 h-4 mr-2" /> Confirm I Sent It
                         </Button>
                      ) : (
-                        <div className="text-xs text-slate-400 text-center">Waiting for seller to deliver...</div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 text-center">Waiting for seller to deliver...</div>
                      )}
                   </div>
                )}
@@ -222,7 +222,7 @@ function TradeCard({ trade, currentUserId, actions }: { trade: Trade, currentUse
                            <CheckCircle className="w-4 h-4 mr-2" /> Release Funds
                         </Button>
                      ) : (
-                        <div className="text-xs text-slate-400 text-center">Waiting for buyer to confirm...</div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 text-center">Waiting for buyer to confirm...</div>
                      )}
                   </div>
                )}

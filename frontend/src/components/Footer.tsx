@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Github, Twitter, Linkedin, Repeat } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#020617] border-t border-white/5 pt-12 pb-8">
+    <footer className="bg-background transition-colors duration-300 border-t border-slate-200 dark:border-slate-800 pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Section: Brand & Main Nav */}
@@ -16,15 +16,15 @@ export default function Footer() {
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
               <Repeat className="w-5 h-5 text-emerald-400" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">BarterVerse</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">BarterVerse</span>
           </div>
 
           {/* Minimal Navigation */}
           <nav className="flex gap-8 text-sm font-medium">
-            <Link to="/explore" className="text-slate-400 hover:text-emerald-400 transition-colors">Marketplace</Link>
-            <Link to="/map" className="text-slate-400 hover:text-emerald-400 transition-colors">EcoMap</Link>
-            <Link to="/governance" className="text-slate-400 hover:text-emerald-400 transition-colors">Governance</Link>
-            <Link to="/about" className="text-slate-400 hover:text-emerald-400 transition-colors">About</Link>
+            <Link to="/explore" className="text-slate-600 dark:text-slate-400 hover:text-emerald-400 transition-colors">Marketplace</Link>
+            <Link to="/map" className="text-slate-600 dark:text-slate-400 hover:text-emerald-400 transition-colors">EcoMap</Link>
+            <Link to="/governance" className="text-slate-600 dark:text-slate-400 hover:text-emerald-400 transition-colors">Governance</Link>
+            <Link to="/about" className="text-slate-600 dark:text-slate-400 hover:text-emerald-400 transition-colors">About</Link>
           </nav>
         </div>
 
@@ -35,20 +35,20 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
           
           <div className="flex gap-6">
-            <span>© {currentYear} BarterVerse Inc.</span>
-            <Link to="/privacy" className="hover:text-slate-300">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-slate-300">Terms of Service</Link>
+            <span>Â© {currentYear} BarterVerse Inc.</span>
+            <Link to="/privacy" className="hover:text-slate-600 dark:text-slate-400">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-slate-600 dark:text-slate-400">Terms of Service</Link>
           </div>
 
           {/* Social Icons */}
           <div className="flex gap-4">
-            <a href="#" className="p-2 rounded-full hover:bg-white/5 hover:text-white transition-colors">
+            <a href="#" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors">
               <Twitter className="w-4 h-4" />
             </a>
-            <a href="#" className="p-2 rounded-full hover:bg-white/5 hover:text-white transition-colors">
+            <a href="#" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors">
               <Github className="w-4 h-4" />
             </a>
-            <a href="#" className="p-2 rounded-full hover:bg-white/5 hover:text-white transition-colors">
+            <a href="#" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors">
               <Linkedin className="w-4 h-4" />
             </a>
           </div>
@@ -58,3 +58,4 @@ export default function Footer() {
     </footer>
   );
 }
+

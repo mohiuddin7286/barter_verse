@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+﻿import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,14 +31,14 @@ export default function Settings() {
         link.href = url;
         link.download = `barter_verse_data_${new Date().toISOString().split('T')[0]}.json`;
         link.click();
-        toast.success('✅ Your data has been exported successfully!');
-        setMessage('✅ Your data has been exported successfully!');
+        toast.success('âœ… Your data has been exported successfully!');
+        setMessage('âœ… Your data has been exported successfully!');
       } else {
-        setMessage(`❌ Error: ${result.message}`);
+        setMessage(`âŒ Error: ${result.message}`);
         toast.error(`Error: ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`âŒ Error: ${error.message}`);
       toast.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
@@ -47,7 +47,7 @@ export default function Settings() {
 
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
-      setMessage('❌ Please enter your password to confirm deletion');
+      setMessage('âŒ Please enter your password to confirm deletion');
       toast.error('Please enter your password to confirm deletion');
       return;
     }
@@ -65,18 +65,18 @@ export default function Settings() {
       const result = await response.json();
 
       if (result.success) {
-        setMessage('✅ Account deleted successfully. You will be logged out in 3 seconds...');
+        setMessage('âœ… Account deleted successfully. You will be logged out in 3 seconds...');
         toast.success('Account deleted. Logging out...');
         setTimeout(() => {
           localStorage.removeItem('token');
           window.location.href = '/';
         }, 3000);
       } else {
-        setMessage(`❌ Error: ${result.message}`);
+        setMessage(`âŒ Error: ${result.message}`);
         toast.error(`Error: ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`âŒ Error: ${error.message}`);
       toast.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
@@ -134,14 +134,14 @@ export default function Settings() {
       const result = await response.json();
 
       if (result.success) {
-        setMessage('✅ Profile saved successfully');
+        setMessage('âœ… Profile saved successfully');
         toast.success('Profile updated!');
       } else {
-        setMessage(`❌ Error: ${result.message}`);
+        setMessage(`âŒ Error: ${result.message}`);
         toast.error(`Error: ${result.message}`);
       }
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      setMessage(`âŒ Error: ${error.message}`);
       toast.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
@@ -233,7 +233,7 @@ export default function Settings() {
           <Card className="card-glass">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <span>🔐</span> Privacy & Data Protection
+                <span>ðŸ”</span> Privacy & Data Protection
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -248,7 +248,7 @@ export default function Settings() {
                 <div className="flex items-start gap-3">
                   <Download className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-1">📥 Export Your Data (GDPR)</h3>
+                    <h3 className="font-semibold mb-1">ðŸ“¥ Export Your Data (GDPR)</h3>
                     <p className="text-sm text-muted-foreground mb-3">
                       Download a complete copy of your profile, listings, trades, and transaction history
                     </p>
@@ -257,7 +257,7 @@ export default function Settings() {
                       disabled={loading}
                       variant="default"
                     >
-                      {loading ? '⏳ Exporting...' : '📥 Export Data'}
+                      {loading ? 'â³ Exporting...' : 'ðŸ“¥ Export Data'}
                     </Button>
                   </div>
                 </div>
@@ -265,7 +265,7 @@ export default function Settings() {
 
               {/* Audit Logs Section */}
               <div className="space-y-3">
-                <h3 className="font-semibold">📋 Account Activity Log</h3>
+                <h3 className="font-semibold">ðŸ“‹ Account Activity Log</h3>
                 <div className="overflow-x-auto border rounded-lg">
                   <table className="w-full text-sm">
                     <thead className="bg-muted">
@@ -316,7 +316,7 @@ export default function Settings() {
                   <AlertCircle className="w-5 h-5 text-destructive mt-1 flex-shrink-0" />
                   <div className="flex-1">
                     <h3 className="font-semibold text-destructive mb-1">
-                      ⚠️ Delete Account (GDPR)
+                      âš ï¸ Delete Account (GDPR)
                     </h3>
                     <p className="text-sm text-muted-foreground mb-3">
                       Your account will be anonymized and all personal information will be removed. This action cannot be undone.
@@ -345,7 +345,7 @@ export default function Settings() {
                             disabled={loading}
                             variant="destructive"
                           >
-                            {loading ? '⏳ Deleting...' : 'Confirm Deletion'}
+                            {loading ? 'â³ Deleting...' : 'Confirm Deletion'}
                           </Button>
                           <Button
                             onClick={() => {
@@ -366,10 +366,10 @@ export default function Settings() {
               {/* Privacy Info */}
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm space-y-2 text-foreground">
                 <p>
-                  <strong>🔒 Data Protection:</strong> Your password is hashed using bcryptjs. Sensitive data is encrypted.
+                  <strong>ðŸ”’ Data Protection:</strong> Your password is hashed using bcryptjs. Sensitive data is encrypted.
                 </p>
                 <p>
-                  <strong>✅ GDPR Compliance:</strong> We support your right to access, export, and delete your data.
+                  <strong>âœ… GDPR Compliance:</strong> We support your right to access, export, and delete your data.
                 </p>
               </div>
             </CardContent>

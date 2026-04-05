@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useCoins } from '@/contexts/CoinContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -105,7 +105,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] relative overflow-hidden">
+    <div className="min-h-screen bg-background transition-colors duration-300 relative overflow-hidden">
       
       {/* Ambient Background */}
       <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-blue-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
@@ -123,14 +123,14 @@ export default function Dashboard() {
                </span>
                Live Dashboard
             </div>
-            <h1 className="text-4xl font-bold text-white tracking-tight">
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
               {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">{user?.display_name || 'Trader'}</span>
             </h1>
-            <p className="text-slate-400">Here's what's happening in your barter portfolio today.</p>
+            <p className="text-slate-600 dark:text-slate-400">Here's what's happening in your barter portfolio today.</p>
           </div>
 
           <div className="flex gap-3">
-             <Button variant="outline" className="border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-300 hover:text-white" onClick={() => navigate('/explore')}>
+             <Button variant="outline" className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" onClick={() => navigate('/explore')}>
                 <Search className="w-4 h-4 mr-2" /> Find Trades
              </Button>
              <Button className="btn-primary shadow-lg shadow-emerald-500/20" onClick={() => navigate('/post')}>
@@ -182,18 +182,18 @@ export default function Dashboard() {
           <div className="lg:col-span-2 space-y-8">
              
              {/* Chart Card */}
-             <div className="glass p-6 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden">
+             <div className="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-10">
-                   <Activity className="w-24 h-24 text-white" />
+                   <Activity className="w-24 h-24 text-slate-900 dark:text-white" />
                 </div>
                 
                 <div className="flex items-center justify-between mb-8 relative z-10">
                    <div>
-                      <h3 className="text-lg font-bold text-white">Portfolio Growth</h3>
-                      <p className="text-sm text-slate-400">Net worth in Barter Coins over time</p>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Portfolio Growth</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Net worth in Barter Coins over time</p>
                    </div>
                    <div className="flex gap-2">
-                      <select className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-emerald-500/50">
+                      <select className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-emerald-500/50">
                          <option>Last 6 Months</option>
                          <option>This Year</option>
                       </select>
@@ -225,8 +225,8 @@ export default function Dashboard() {
              {/* Listings Tabs */}
              <Tabs defaultValue="active" className="w-full">
                 <div className="flex items-center justify-between mb-4">
-                   <h3 className="text-xl font-bold text-white">Your Inventory</h3>
-                   <TabsList className="bg-slate-900/50 border border-slate-800 p-1 rounded-xl">
+                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">Your Inventory</h3>
+                   <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-xl">
                       <TabsTrigger value="active" className="text-xs rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Active</TabsTrigger>
                       <TabsTrigger value="drafts" className="text-xs rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Drafts</TabsTrigger>
                    </TabsList>
@@ -237,13 +237,13 @@ export default function Dashboard() {
                       <div className="text-center py-12 text-slate-500">Loading...</div>
                    ) : myListings.length > 0 ? (
                       myListings.slice(0, 3).map((listing) => (
-                         <div key={listing.id} className="group glass p-4 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all flex items-center gap-4 cursor-pointer">
-                            <div className="h-16 w-16 rounded-xl bg-slate-900 overflow-hidden flex-shrink-0">
+                         <div key={listing.id} className="group glass p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/30 transition-all flex items-center gap-4 cursor-pointer">
+                            <div className="h-16 w-16 rounded-xl bg-white dark:bg-slate-900 overflow-hidden flex-shrink-0">
                                <img src={listing.images?.[0] || 'https://images.unsplash.com/photo-1556740758-90de374c12ad?w=150'} alt={listing.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="flex-1 min-w-0">
-                               <h4 className="font-bold text-slate-200 truncate group-hover:text-emerald-400 transition-colors">{listing.title}</h4>
-                               <p className="text-xs text-slate-500">{listing.category} • Listed {new Date(listing.created_at).toLocaleDateString()}</p>
+                               <h4 className="font-bold text-slate-900 dark:text-slate-200 truncate group-hover:text-emerald-400 transition-colors">{listing.title}</h4>
+                               <p className="text-xs text-slate-500">{listing.category} ï¿½?ï¿½ Listed {new Date(listing.created_at).toLocaleDateString()}</p>
                             </div>
                             <div className="text-right">
                                <div className="font-bold text-amber-400 text-lg">{listing.price_bc} BC</div>
@@ -252,7 +252,7 @@ export default function Dashboard() {
                          </div>
                       ))
                    ) : (
-                      <div className="glass p-12 rounded-2xl border border-dashed border-slate-800 text-center">
+                      <div className="glass p-12 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center">
                          <p className="text-slate-500 mb-4">No active listings found.</p>
                          <Button variant="outline" size="sm" onClick={() => navigate('/post')}>Create First Listing</Button>
                       </div>
@@ -263,9 +263,9 @@ export default function Dashboard() {
 
           {/* Right Column: Activity Feed */}
           <div className="space-y-6">
-             <div className="glass p-6 rounded-3xl border border-white/5 h-full min-h-[500px] flex flex-col">
+             <div className="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 h-full min-h-[500px] flex flex-col">
                 <div className="flex items-center justify-between mb-6">
-                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                       <Bell className="w-5 h-5 text-blue-400" /> Recent Activity
                    </h3>
                 </div>
@@ -278,14 +278,14 @@ export default function Dashboard() {
                       transactions.slice(0, 8).map((tx, idx) => (
                          <div key={tx.id || idx} className="flex gap-4 group">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-4 border-[#020617] shadow-sm transition-colors ${
-                               tx.type === 'earn' ? 'bg-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white' : 
-                               'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white'
+                               tx.type === 'earn' ? 'bg-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-900 dark:hover:text-white' : 
+                               'bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-900 dark:hover:text-white'
                             }`}>
                                {tx.type === 'earn' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowLeftRight className="w-5 h-5" />}
                             </div>
-                            <div className="pb-6 border-b border-white/5 w-full group-last:border-0 group-last:pb-0">
+                            <div className="pb-6 border-b border-slate-200 dark:border-slate-800 w-full group-last:border-0 group-last:pb-0">
                                <div className="flex justify-between items-start">
-                                  <p className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors">
+                                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                                      {tx.meta?.reason || (tx.type === 'earn' ? 'Received Payment' : 'Sent Payment')}
                                   </p>
                                   <span className={`text-xs font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>
@@ -293,7 +293,7 @@ export default function Dashboard() {
                                   </span>
                                </div>
                                <p className="text-xs text-slate-500 mt-1">
-                                  {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Wallet Transaction
+                                  {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ï¿½?ï¿½ Wallet Transaction
                                </p>
                             </div>
                          </div>
@@ -317,7 +317,7 @@ export default function Dashboard() {
 function StatCard({ icon, label, value, trend, color, delay }: { icon: React.ReactNode, label: string, value: string, trend: string, color: string, delay: string }) {
    return (
       <div 
-         className={`glass p-6 rounded-3xl border border-white/5 hover:-translate-y-1 transition-all duration-300 group hover:border-${color}-500/30 animate-fade-in-up opacity-0`}
+         className={`glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:-translate-y-1 transition-all duration-300 group hover:border-${color}-500/30 animate-fade-in-up opacity-0`}
          style={{ animationDelay: delay, animationFillMode: 'forwards' }}
       >
          <div className="flex justify-between items-start mb-4">
@@ -331,11 +331,12 @@ function StatCard({ icon, label, value, trend, color, delay }: { icon: React.Rea
             )}
          </div>
          <div className="space-y-1">
-            <p className="text-sm font-medium text-slate-400">{label}</p>
-            <h3 className="text-3xl font-bold text-white tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{label}</p>
+            <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
                {value}
             </h3>
          </div>
       </div>
    );
 }
+

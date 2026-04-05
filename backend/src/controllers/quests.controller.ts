@@ -15,6 +15,7 @@ export const createQuest = async (req: AuthRequest, res: Response) => {
     const quest = await questsService.createQuest(validatedData);
     res.status(201).json({ success: true, quest });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(400, error.message || 'Failed to create quest');
   }
 };
@@ -28,6 +29,7 @@ export const getActiveQuests = async (req: Request, res: Response) => {
     );
     res.json({ success: true, quests });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch quests');
   }
 };
@@ -37,6 +39,7 @@ export const getDailyQuests = async (_req: Request, res: Response) => {
     const quests = await questsService.getDailyQuests();
     res.json({ success: true, quests });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch daily quests');
   }
 };
@@ -46,6 +49,7 @@ export const getWeeklyQuests = async (_req: Request, res: Response) => {
     const quests = await questsService.getWeeklyQuests();
     res.json({ success: true, quests });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch weekly quests');
   }
 };
@@ -56,6 +60,7 @@ export const getSeasonalQuests = async (req: Request, res: Response) => {
     const quests = await questsService.getSeasonalQuests(season);
     res.json({ success: true, quests });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch seasonal quests');
   }
 };
@@ -66,6 +71,7 @@ export const getQuestById = async (req: Request, res: Response) => {
     const quest = await questsService.getQuestById(questId);
     res.json({ success: true, quest });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(404, error.message || 'Quest not found');
   }
 };
@@ -77,6 +83,7 @@ export const toggleQuestActive = async (req: AuthRequest, res: Response) => {
     const quest = await questsService.toggleQuestActive(questId, is_active);
     res.json({ success: true, quest });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(400, error.message || 'Failed to toggle quest');
   }
 };
@@ -93,6 +100,7 @@ export const getUserQuests = async (req: AuthRequest, res: Response) => {
     );
     res.json({ success: true, quests });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch user quests');
   }
 };
@@ -104,6 +112,7 @@ export const getQuestCompletion = async (req: AuthRequest, res: Response) => {
     const completion = await questsService.getQuestCompletion(questId, userId);
     res.json({ success: true, completion });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(404, error.message || 'Quest completion not found');
   }
 };
@@ -120,6 +129,7 @@ export const updateQuestProgress = async (req: AuthRequest, res: Response) => {
     );
     res.json({ success: true, completion });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(400, error.message || 'Failed to update progress');
   }
 };
@@ -131,6 +141,7 @@ export const completeQuest = async (req: AuthRequest, res: Response) => {
     const result = await questsService.completeQuest(questId, userId);
     res.json({ success: true, ...result });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(400, error.message || 'Failed to complete quest');
   }
 };
@@ -146,6 +157,7 @@ export const resetQuestProgress = async (req: AuthRequest, res: Response) => {
     }
     res.json({ success: true, message: 'Quest progress reset' });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(400, error.message || 'Failed to reset progress');
   }
 };
@@ -158,6 +170,7 @@ export const getUserAchievements = async (req: AuthRequest, res: Response) => {
     const achievements = await questsService.getUserAchievements(userId);
     res.json({ success: true, achievements });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch achievements');
   }
 };
@@ -168,6 +181,7 @@ export const getUserAchievementsByUser = async (req: Request, res: Response) => 
     const achievements = await questsService.getUserAchievements(userId);
     res.json({ success: true, achievements });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch achievements');
   }
 };
@@ -175,8 +189,15 @@ export const getUserAchievementsByUser = async (req: Request, res: Response) => 
 export const getAchievementById = async (req: Request, res: Response) => {
   try {
     const { achievementId } = req.params;
-    // TODO: Implement when Achievement model exists in Prisma
-    throw new AppError(501, 'Achievement system not yet implemented');
+    const achievement = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+    });
+
+    if (!achievement) {
+      throw new AppError(404, 'Achievement not found');
+    }
+
+    res.json({ success: true, achievement });
   } catch (error: any) {
     if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch achievement');
@@ -191,6 +212,7 @@ export const getUserLevel = async (req: AuthRequest, res: Response) => {
     const stats = await questsService.getUserXPStats(userId);
     res.json({ success: true, ...stats });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch level information');
   }
 };
@@ -201,6 +223,7 @@ export const getUserLevelByUser = async (req: Request, res: Response) => {
     const stats = await questsService.getUserXPStats(userId);
     res.json({ success: true, ...stats });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch level information');
   }
 };
@@ -211,6 +234,7 @@ export const addXPToUser = async (req: AuthRequest, res: Response) => {
     const result = await questsService.addXPToUser(userId, xp_amount, reason);
     res.json({ success: true, ...result });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(400, error.message || 'Failed to add XP');
   }
 };
@@ -223,6 +247,7 @@ export const getTopUsersByXP = async (req: Request, res: Response) => {
     const users = await questsService.getXPLeaderboard(parseInt(limit as string));
     res.json({ success: true, users });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch leaderboard');
   }
 };
@@ -233,6 +258,7 @@ export const getTopUsersByLevel = async (req: Request, res: Response) => {
     const users = await questsService.getLevelLeaderboard(parseInt(limit as string));
     res.json({ success: true, users });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch leaderboard');
   }
 };
@@ -243,6 +269,7 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
     const stats = await questsService.getUserXPStats(userId);
     res.json({ success: true, stats });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch user stats');
   }
 };
@@ -252,6 +279,7 @@ export const getGlobalStats = async (_req: Request, res: Response) => {
     const stats = await questsService.getQuestStatistics();
     res.json({ success: true, stats });
   } catch (error: any) {
+    if (error instanceof AppError) throw error;
     throw new AppError(500, 'Failed to fetch global stats');
   }
 };

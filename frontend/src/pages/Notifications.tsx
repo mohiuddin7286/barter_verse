@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Bell, Trash2, Check, AlertCircle, Filter, Settings } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -181,18 +181,18 @@ export const NotificationCenter: React.FC = () => {
       case 'trade_offer':
       case 'trade_accepted':
       case 'trade_completed':
-        return '💼';
+        return 'ï¿½Y'ï¿½';
       case 'quest_completed':
       case 'achievement':
-        return '⭐';
+        return 'â­';
       case 'message':
-        return '💬';
+        return 'ï¿½Y'ï¿½';
       case 'review':
-        return '⭐';
+        return 'â­';
       case 'comment':
-        return '💭';
+        return 'ï¿½Y'ï¿½';
       default:
-        return 'ℹ️';
+        return 'ï¿½"ï¿½ï¸';
     }
   };
 
@@ -228,9 +228,9 @@ export const NotificationCenter: React.FC = () => {
                 <Bell className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">Notifications</h1>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Notifications</h1>
                 <p className="text-gray-400 text-sm mt-1">
-                  {unreadCount} unread • {totalCount} total
+                  {unreadCount} unread ï¿½?ï¿½ {totalCount} total
                 </p>
               </div>
             </div>
@@ -265,7 +265,7 @@ export const NotificationCenter: React.FC = () => {
         {/* Preferences Panel */}
         {showPreferences && preferences && (
           <div className="mb-8 p-6 bg-gray-900/50 border border-gray-700/50 rounded-xl">
-            <h2 className="text-lg font-semibold text-white mb-4">Notification Preferences</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Notification Preferences</h2>
 
             {preferencesLoading ? (
               <div className="flex items-center justify-center py-4">
@@ -281,7 +281,7 @@ export const NotificationCenter: React.FC = () => {
                   <select
                     value={preferences.frequency || 'immediate'}
                     onChange={(e) => handleUpdatePreference('frequency', e.target.value)}
-                    className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
+                    className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:border-amber-500"
                   >
                     <option value="immediate">Immediate</option>
                     <option value="daily">Daily Digest</option>
@@ -349,7 +349,7 @@ export const NotificationCenter: React.FC = () => {
                 className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
                   filterType === filter
                     ? 'bg-amber-500 text-white'
-                    : 'bg-gray-900/50 text-gray-400 hover:text-white border border-gray-700'
+                    : 'bg-gray-900/50 text-gray-400 hover:text-slate-900 dark:hover:text-white border border-gray-700'
                 }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -431,9 +431,9 @@ export const NotificationCenter: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div>
-                          <h3 className="font-semibold text-white">{notification.title}</h3>
+                          <h3 className="font-semibold text-slate-900 dark:text-white">{notification.title}</h3>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {getTypeLabel(notification.type)} •{' '}
+                            {getTypeLabel(notification.type)} ï¿½?ï¿½{' '}
                             {formatTime(notification.created_at)}
                           </p>
                         </div>
@@ -516,3 +516,4 @@ export const NotificationCenter: React.FC = () => {
 };
 
 export default NotificationCenter;
+

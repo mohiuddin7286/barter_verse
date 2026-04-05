@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ export default function Governance() {
    };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-[#020617] relative">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 relative">
        {/* Background Ambience */}
        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[120px] -z-10" />
 
@@ -30,8 +30,8 @@ export default function Governance() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold uppercase tracking-wider mb-4">
                    <Vote className="w-3 h-3" /> Community DAO
                 </div>
-                <h1 className="text-4xl font-extrabold text-white mb-2">Governance Console</h1>
-                <p className="text-slate-400 max-w-2xl">
+                <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-2">Governance Console</h1>
+                <p className="text-slate-600 dark:text-slate-400 max-w-2xl">
                    Shape the future of the BarterVerse. Your coins give you voting power to decide on platform fees, new features, and community rules.
                 </p>
              </div>
@@ -46,18 +46,18 @@ export default function Governance() {
              
              {/* Featured Proposal */}
              <div className="md:col-span-2 glass p-8 rounded-3xl border border-purple-500/30 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 bg-purple-500 text-white text-xs font-bold rounded-bl-2xl">
+                <div className="absolute top-0 right-0 p-4 bg-purple-500 text-slate-900 dark:text-white text-xs font-bold rounded-bl-2xl">
                    ENDING SOON
                 </div>
                 <div className="flex flex-col md:flex-row gap-8">
                    <div className="flex-1 space-y-4">
-                      <div className="flex items-center gap-2 text-slate-400 text-sm">
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
                          <span>Proposal #104</span>
-                         <span>•</span>
+                         <span>ï¿½?ï¿½</span>
                          <span className="text-purple-400">Core Protocol</span>
                       </div>
-                      <h2 className="text-2xl font-bold text-white">Reduce Listing Fee to 5 BC</h2>
-                      <p className="text-slate-300 leading-relaxed">
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reduce Listing Fee to 5 BC</h2>
+                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                          To encourage more new users to join, we propose lowering the standard listing fee from 10 BC to 5 BC for the next 3 months. This will be subsidized by the Community Treasury.
                       </p>
                       
@@ -66,26 +66,26 @@ export default function Governance() {
                             <span className="text-emerald-400">Yes (68%)</span>
                             <span className="text-red-400">No (32%)</span>
                          </div>
-                         <Progress value={68} className="h-4 bg-slate-900" />
+                         <Progress value={68} className="h-4 bg-white dark:bg-slate-900" />
                          <div className="text-xs text-slate-500 text-right">1,402 Votes Cast</div>
                       </div>
 
                       <div className="flex gap-3 pt-4">
                          <VoteButton type="yes" label="Vote YES" />
                          <VoteButton type="no" label="Vote NO" />
-                         <Button variant="outline" className="ml-auto border-slate-700 text-slate-300" onClick={handleDiscuss}>
+                         <Button variant="outline" className="ml-auto border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400" onClick={handleDiscuss}>
                             <MessageSquare className="w-4 h-4 mr-2" /> Discuss
                          </Button>
                       </div>
                    </div>
                    
                    {/* Visual / Icon */}
-                   <div className="hidden md:flex flex-col items-center justify-center w-48 border-l border-white/5 pl-8">
-                      <div className="w-24 h-24 rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                   <div className="hidden md:flex flex-col items-center justify-center w-48 border-l border-slate-200 dark:border-slate-800 pl-8">
+                      <div className="w-24 h-24 rounded-full bg-white dark:bg-slate-900 border-4 border-slate-200 dark:border-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                          <FileText className="w-10 h-10 text-purple-400" />
                       </div>
                       <div className="text-center">
-                         <div className="text-sm font-bold text-white">By @AlexAdmin</div>
+                         <div className="text-sm font-bold text-slate-900 dark:text-white">By @AlexAdmin</div>
                          <div className="text-xs text-slate-500">Core Team</div>
                       </div>
                    </div>
@@ -111,19 +111,19 @@ export default function Governance() {
 
           {/* Past Decisions */}
           <div className="space-y-4">
-             <h3 className="text-xl font-bold text-white">Recent Decisions</h3>
-             <div className="glass rounded-xl overflow-hidden border border-white/5">
+             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Recent Decisions</h3>
+             <div className="glass rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
                 {[
                    { id: 103, title: "Enable Dark Mode by Default", result: "Passed", date: "Oct 12" },
                    { id: 102, title: "Allow Anonymous Trading", result: "Rejected", date: "Sep 28" },
                    { id: 101, title: "Launch Mobile App Beta", result: "Passed", date: "Sep 15" },
                 ].map((item, i) => (
-                   <div key={i} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
+                   <div key={i} className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 last:border-0 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
                       <div className="flex items-center gap-4">
                          <div className={`p-2 rounded-lg ${item.result === 'Passed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                             {item.result === 'Passed' ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                          </div>
-                         <span className="font-medium text-slate-200">{item.title}</span>
+                         <span className="font-medium text-slate-900 dark:text-slate-200">{item.title}</span>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-slate-500">
                          <span>{item.date}</span>
@@ -142,11 +142,11 @@ export default function Governance() {
 // Sub-components
 function StatsCard({ label, value, icon }: any) {
    return (
-      <div className="glass px-5 py-3 rounded-xl border border-white/5 flex items-center gap-3">
+      <div className="glass px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
          <div className="p-2 bg-slate-800 rounded-lg">{icon}</div>
          <div>
             <div className="text-xs text-slate-500 uppercase font-bold">{label}</div>
-            <div className="text-lg font-bold text-white">{value}</div>
+            <div className="text-lg font-bold text-slate-900 dark:text-white">{value}</div>
          </div>
       </div>
    );
@@ -154,23 +154,23 @@ function StatsCard({ label, value, icon }: any) {
 
 function ProposalCard({ id, title, desc, status, yesPercent }: any) {
    return (
-      <div className="glass p-6 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all flex flex-col justify-between">
+      <div className="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-purple-500/30 transition-all flex flex-col justify-between">
          <div className="space-y-3">
             <div className="flex justify-between items-start">
-               <Badge variant="outline" className="bg-slate-900 text-slate-400 border-slate-700">{id}</Badge>
+               <Badge variant="outline" className="bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800">{id}</Badge>
                <Badge className={`${status === 'Active' ? 'bg-emerald-500' : 'bg-amber-500'}`}>{status}</Badge>
             </div>
-            <h3 className="text-xl font-bold text-white">{title}</h3>
-            <p className="text-sm text-slate-400">{desc}</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{desc}</p>
          </div>
          
          <div className="pt-6 space-y-3">
-            <div className="flex justify-between text-xs font-bold text-slate-300">
+            <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
                <span>Approval Rating</span>
                <span>{yesPercent}%</span>
             </div>
-            <Progress value={yesPercent} className="h-2 bg-slate-900" />
-            <Button variant="outline" className="w-full border-slate-700 text-slate-300 hover:text-white mt-2" onClick={() => toast.message('Proposal details coming soon')}>
+            <Progress value={yesPercent} className="h-2 bg-white dark:bg-slate-900" />
+            <Button variant="outline" className="w-full border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mt-2" onClick={() => toast.message('Proposal details coming soon')}>
                View Details
             </Button>
          </div>
@@ -201,3 +201,4 @@ function VoteButton({ type, label }: { type: 'yes' | 'no', label: string }) {
       </Button>
    );
 }
+
