@@ -5,8 +5,10 @@ import { z } from "zod";
 import { NotificationService } from "./notifications.service";
 
 // Validation Schemas
-export const createSessionSchema = z.object({
-  participant_id: z.string().min(1, "Participant ID is required"),
+const createSessionBaseSchema = z.object({
+  provider_id: z.string().min(1, "Provider ID is required").optional(),
+  provider_email: z.string().email("Provider email must be valid").optional(),
+  participant_id: z.string().min(1, "Participant ID is required").optional(),
   skill_title: z.string().min(3).max(255, "Skill title must be 3-255 characters"),
   description: z.string().max(1000, "Description max 1000 characters").optional(),
   scheduled_at: z.string().refine((date) => new Date(date) > new Date(), {
@@ -15,9 +17,16 @@ export const createSessionSchema = z.object({
   duration_minutes: z.number().min(15).max(480).default(60),
   location: z.string().max(500).optional(),
   meeting_link: z.string().url().optional(),
+  google_access_token: z.string().min(1).optional(),
 });
 
-export const updateSessionSchema = createSessionSchema.partial().omit({ participant_id: true });
+export const createSessionSchema = createSessionBaseSchema.refine((data) => data.provider_id || data.provider_email || data.participant_id, {
+  message: "Provider or participant is required",
+});
+
+export const updateSessionSchema = createSessionBaseSchema
+  .partial()
+  .omit({ provider_id: true, provider_email: true, participant_id: true });
 
 export const completeSessionSchema = z.object({
   feedback: z.string().max(1000).optional(),
@@ -32,11 +41,93 @@ export type CompleteSessionInput = z.infer<typeof completeSessionSchema>;
 export class SessionsService {
   // ============ SESSION CRUD ============
 
-  async createSession(providerId: string, data: CreateSessionInput): Promise<any> {
+  private createGoogleMeetLink(): string {
+    const alphabet = "abcdefghijklmnopqrstuvwxyz";
+    const randomPart = (length: number) =>
+      Array.from({ length }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join("");
+
+    return `https://meet.google.com/${randomPart(3)}-${randomPart(4)}-${randomPart(3)}`;
+  }
+
+  private async createGoogleCalendarMeetLink(
+    accessToken: string,
+    data: {
+      skillTitle: string;
+      description?: string;
+      scheduledAt: Date;
+      durationMinutes: number;
+      providerEmail: string;
+      participantEmail: string;
+    }
+  ): Promise<string> {
+    const startTime = data.scheduledAt;
+    const endTime = new Date(startTime.getTime() + data.durationMinutes * 60000);
+
+    const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        summary: `BarterVerse Skill Session: ${data.skillTitle}`,
+        description: data.description || `Skill session for ${data.skillTitle}`,
+        start: {
+          dateTime: startTime.toISOString(),
+        },
+        end: {
+          dateTime: endTime.toISOString(),
+        },
+        attendees: [
+          { email: data.providerEmail },
+          { email: data.participantEmail },
+        ],
+        conferenceData: {
+          createRequest: {
+            requestId: `barterverse-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            conferenceSolutionKey: {
+              type: 'hangoutsMeet',
+            },
+          },
+        },
+      }),
+    });
+
+    const event = await response.json() as { hangoutLink?: string; error?: { message?: string } };
+
+    if (!response.ok || !event.hangoutLink) {
+      throw new AppError(502, event.error?.message || 'Google Meet link could not be created');
+    }
+
+    return event.hangoutLink;
+  }
+
+  async createSession(currentUserId: string, data: CreateSessionInput): Promise<any> {
     const validatedData = createSessionSchema.parse(data);
+    let providerId = currentUserId;
+    let participantId = validatedData.participant_id;
+
+    if (validatedData.provider_id || validatedData.provider_email) {
+      const providerProfile = await prisma.profile.findFirst({
+        where: validatedData.provider_id
+          ? { id: validatedData.provider_id }
+          : { email: validatedData.provider_email },
+      });
+
+      if (!providerProfile) {
+        throw new AppError(404, "Provider profile not found");
+      }
+
+      providerId = providerProfile.id;
+      participantId = currentUserId;
+    }
+
+    if (!participantId) {
+      throw new AppError(400, "Participant ID is required");
+    }
 
     // Cannot book with yourself
-    if (providerId === validatedData.participant_id) {
+    if (providerId === participantId) {
       throw new AppError(400, "You cannot book a session with yourself");
     }
 
@@ -51,7 +142,7 @@ export class SessionsService {
 
     // Check if participant exists
     const participant = await prisma.profile.findUnique({
-      where: { id: validatedData.participant_id },
+      where: { id: participantId },
     });
 
     if (!participant) {
@@ -71,7 +162,7 @@ export class SessionsService {
             status: { in: ["SCHEDULED", "IN_PROGRESS"] },
           },
           {
-            participant_id: validatedData.participant_id,
+            participant_id: participantId,
             scheduled_at: {
               gte: new Date(validatedData.scheduled_at),
               lt: new Date(new Date(validatedData.scheduled_at).getTime() + validatedData.duration_minutes * 60000),
@@ -86,16 +177,30 @@ export class SessionsService {
       throw new AppError(409, "Time slot is already booked");
     }
 
+    let meetingLink = validatedData.meeting_link;
+    const scheduledAt = new Date(validatedData.scheduled_at);
+
+    if (!meetingLink && validatedData.google_access_token) {
+      meetingLink = await this.createGoogleCalendarMeetLink(validatedData.google_access_token, {
+        skillTitle: validatedData.skill_title,
+        description: validatedData.description,
+        scheduledAt,
+        durationMinutes: validatedData.duration_minutes,
+        providerEmail: provider.email,
+        participantEmail: participant.email,
+      });
+    }
+
     const session = await prisma.session.create({
       data: {
         provider_id: providerId,
-        participant_id: validatedData.participant_id,
+        participant_id: participantId,
         skill_title: validatedData.skill_title,
         description: validatedData.description,
-        scheduled_at: new Date(validatedData.scheduled_at),
+        scheduled_at: scheduledAt,
         duration_minutes: validatedData.duration_minutes,
-        location: validatedData.location,
-        meeting_link: validatedData.meeting_link,
+        location: validatedData.location || "Google Meet",
+        meeting_link: meetingLink || this.createGoogleMeetLink(),
       },
       include: {
         provider: {
@@ -122,7 +227,7 @@ export class SessionsService {
     // Send notification to provider about new booking
     try {
       const participant = await prisma.profile.findUnique({
-        where: { id: validatedData.participant_id },
+        where: { id: participantId },
         select: { username: true },
       });
 

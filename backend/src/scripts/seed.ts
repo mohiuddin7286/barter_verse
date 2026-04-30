@@ -13,6 +13,7 @@ async function main() {
       create: {
         email: 'alex@example.com',
         username: 'Alex_Trader',
+        password: 'password123',
         coins: 500,
       },
     });
@@ -23,6 +24,7 @@ async function main() {
       create: {
         email: 'sarah@example.com',
         username: 'Sarah_Skills',
+        password: 'password123',
         coins: 300,
       },
     });

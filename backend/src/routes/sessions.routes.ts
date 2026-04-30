@@ -25,9 +25,6 @@ const router = Router();
 // Create a new session (auth required)
 router.post('/', authRequired, createSession);
 
-// Get single session (public)
-router.get('/:sessionId', getSessionById);
-
 // Get my sessions as provider (auth required)
 router.get('/my-sessions/provider', authRequired, getSessionsAsProvider);
 
@@ -72,5 +69,8 @@ router.get('/stats/provider/:providerId', getProviderStats);
 
 // Get upcoming sessions (public)
 router.get('/upcoming', getUpcomingSessions);
+
+// Get single session (public)
+router.get('/:sessionId', getSessionById);
 
 export default router;

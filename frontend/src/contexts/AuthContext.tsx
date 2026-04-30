@@ -19,6 +19,7 @@ interface AuthContextType {
   token: string | null;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithGoogle: (credential: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
   isAuthenticated: boolean;
@@ -106,6 +107,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async (credential: string) => {
+    try {
+      const response = await api.googleLogin(credential);
+      const { token: newToken, user: newUser } = response.data.data;
+
+      setToken(newToken);
+      setUser(newUser);
+      api.setToken(newToken);
+
+      localStorage.setItem('auth_token', newToken);
+      localStorage.setItem('user', JSON.stringify(newUser));
+
+      navigate('/dashboard');
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Google sign in failed';
+      return { error: { message: errorMessage } };
+    }
+  };
+
   const signOut = async () => {
     try {
       await api.logout();
@@ -130,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         signUp,
         signIn,
+        signInWithGoogle,
         signOut,
         loading,
         isAuthenticated: !!token && !!user,

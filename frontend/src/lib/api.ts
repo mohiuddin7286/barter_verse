@@ -48,13 +48,17 @@ class ApiClient {
     return this.client.post('/auth/signin', { email, password });
   }
 
+  async googleLogin(credential: string) {
+    return this.client.post('/auth/google', { credential });
+  }
+
   async logout() {
     this.token = null;
     localStorage.removeItem('auth_token');
   }
 
   async updateProfile(data: { display_name?: string; bio?: string; avatar_url?: string; location?: string; email?: string }) {
-    return this.client.patch('/users/profile', data);
+    return this.client.patch('/auth/profile', data);
   }
 
   async updateSettings(data: any) {
@@ -80,8 +84,8 @@ class ApiClient {
     return this.client.get(`/listings/${id}`);
   }
 
-  async getUserListings(userId: string) {
-    return this.client.get(`/listings/user/${userId}`);
+  async getUserListings(_userId?: string) {
+    return this.client.get('/listings/user/my-listings');
   }
 
   async createListing(data: any) {
@@ -97,7 +101,7 @@ class ApiClient {
   }
 
   async archiveListing(id: string) {
-    return this.client.patch(`/listings/${id}`, { status: 'ARCHIVED' });
+    return this.client.post(`/listings/${id}/archive`);
   }
 
   // --- Barter Coins (Wallet) ---
@@ -301,7 +305,7 @@ class ApiClient {
   }
 
   // --- Sessions / Skill Booking ---
-  async createSession(data: { participant_id: string; skill_title: string; scheduled_at: string; description?: string; duration_minutes?: number; location?: string; meeting_link?: string }) {
+  async createSession(data: { provider_id?: string; provider_email?: string; participant_id?: string; skill_title: string; scheduled_at: string; description?: string; duration_minutes?: number; location?: string; meeting_link?: string; google_access_token?: string }) {
     return this.client.post('/sessions', data);
   }
 

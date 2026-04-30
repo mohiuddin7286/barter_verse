@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { prisma } from '../prisma/client';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const buildUserPayload = (user: any) => ({
   id: user.id,
@@ -83,6 +86,10 @@ export const login = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    if (!user.password) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -94,6 +101,66 @@ export const login = async (req: Request, res: Response) => {
   } catch (err) {
     console.error('login error:', err);
     res.status(500).json({ message: 'Login failed' });
+  }
+};
+
+export const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const { credential } = req.body;
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+
+    if (!googleClientId || googleClientId.startsWith('your_')) {
+      return res.status(500).json({ message: 'Google login is not configured on the server' });
+    }
+
+    if (!credential) {
+      return res.status(400).json({ message: 'Google credential is required' });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: googleClientId,
+    });
+    const payload = ticket.getPayload();
+
+    if (!payload?.email || !payload.email_verified) {
+      return res.status(401).json({ message: 'Google account email could not be verified' });
+    }
+
+    const baseUsername = (payload.email.split('@')[0] || 'google_user')
+      .replace(/[^a-zA-Z0-9_-]/g, '')
+      .toLowerCase();
+    let username = baseUsername || `google_${payload.sub}`;
+    let attempt = 0;
+
+    while (attempt < 100) {
+      const existing = await prisma.profile.findUnique({ where: { username } });
+      if (!existing || existing.email === payload.email) break;
+      attempt += 1;
+      username = `${baseUsername}${attempt}`;
+    }
+
+    const user = await prisma.profile.upsert({
+      where: { email: payload.email },
+      update: {
+        avatar_url: payload.picture,
+        display_name: payload.name,
+      },
+      create: {
+        email: payload.email,
+        username,
+        display_name: payload.name,
+        avatar_url: payload.picture,
+        password: `google:${payload.sub}`,
+      },
+    });
+
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '7d' });
+
+    res.json({ data: { token, user: buildUserPayload(user) } });
+  } catch (err) {
+    console.error('google login error:', err);
+    res.status(401).json({ message: 'Google login failed' });
   }
 };
 

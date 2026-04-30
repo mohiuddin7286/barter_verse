@@ -16,6 +16,7 @@ import EcoMap from './pages/EcoMap';
 import Quests from './pages/Quests';         
 import Governance from './pages/Governance'; 
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CoinProvider } from '@/contexts/CoinContext';
 import { TradeProvider } from '@/contexts/TradeContext';
@@ -54,6 +55,7 @@ function App() {
                 </main>
                 <Footer />
                 <Toaster />
+                <SonnerToaster />
               </ListingsProvider>
             </TradeProvider>
           </CoinProvider>

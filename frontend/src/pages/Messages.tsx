@@ -38,7 +38,7 @@ export default function Messages() {
   // 2. Load Messages when a chat is selected
   useEffect(() => {
     if (selectedChat) {
-        api.getMessages(selectedChat.otherUser.id).then(res => {
+        api.getMessages(selectedChat.userId).then(res => {
             const data = res.data.data || res.data;
             setMessages(Array.isArray(data) ? data : []);
             scrollToBottom();
@@ -67,7 +67,7 @@ export default function Messages() {
     scrollToBottom();
 
     try {
-      await api.sendMessage(selectedChat.otherUser.id, tempMsg.content);
+      await api.sendMessage(selectedChat.userId, tempMsg.content);
       loadConversations(); // Update "Last message" in sidebar
     } catch (error) {
       toast.error("Failed to send message");
@@ -108,19 +108,19 @@ export default function Messages() {
                     }`}
                 >
                     <Avatar>
-                    <AvatarImage src={chat.otherUser?.avatar_url} />
+                    <AvatarImage src={chat.avatar} />
                     <AvatarFallback className="bg-slate-800 text-slate-600 dark:text-slate-400">
-                        {chat.otherUser?.username?.[0]?.toUpperCase()}
+                        {chat.username?.[0]?.toUpperCase()}
                     </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 text-left overflow-hidden">
                     <div className="flex justify-between items-center mb-0.5">
                         <span className={`font-medium ${selectedChat?.id === chat.id ? 'text-emerald-400' : 'text-slate-900 dark:text-slate-200'}`}>
-                        {chat.otherUser?.username || "Unknown"}
+                        {chat.username || "Unknown"}
                         </span>
                         <span className="text-[10px] text-slate-500">
-                            {new Date(chat.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            {new Date(chat.lastMessageAt || chat.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{chat.lastMessage}</p>
@@ -140,13 +140,13 @@ export default function Messages() {
                 <div className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-6">
                 <div className="flex items-center gap-3">
                     <Avatar>
-                    <AvatarImage src={selectedChat.otherUser?.avatar_url} />
+                    <AvatarImage src={selectedChat.avatar} />
                     <AvatarFallback className="bg-emerald-900 text-emerald-200">
-                        {selectedChat.otherUser?.username?.[0]}
+                        {selectedChat.username?.[0]}
                     </AvatarFallback>
                     </Avatar>
                     <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{selectedChat.otherUser?.username}</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white">{selectedChat.username}</h3>
                     <p className="text-xs text-emerald-400 flex items-center gap-1">Online</p>
                     </div>
                 </div>
@@ -158,16 +158,16 @@ export default function Messages() {
                     {messages.map((msg, idx) => (
                     <div 
                         key={idx} 
-                        className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${msg.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
                     >
                         <div className={`max-w-[70%] rounded-2xl p-3 px-4 ${
-                        msg.sender_id === user?.id 
+                        msg.senderId === user?.id 
                             ? 'bg-emerald-600 text-white rounded-tr-none' 
                             : 'bg-slate-800 text-slate-200 rounded-tl-none'
                         }`}>
                         <p className="text-sm">{msg.content}</p>
-                        <p className={`text-[10px] mt-1 text-right ${msg.sender_id === user?.id ? 'text-emerald-200' : 'text-slate-500'}`}>
-                            {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        <p className={`text-[10px] mt-1 text-right ${msg.senderId === user?.id ? 'text-emerald-200' : 'text-slate-500'}`}>
+                            {new Date(msg.timestamp || msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </p>
                         </div>
                     </div>

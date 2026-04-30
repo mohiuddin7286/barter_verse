@@ -9,7 +9,11 @@ async function seedAdmin() {
 
     await prisma.profile.upsert({
       where: { email: "admin@gmail.com" },
-      update: {},
+      update: {
+        username: "admin",
+        password: hashedPassword,
+        role: "admin",
+      },
       create: {
         email: "admin@gmail.com",
         username: "admin",

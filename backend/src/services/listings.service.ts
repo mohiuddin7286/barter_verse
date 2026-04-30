@@ -33,7 +33,10 @@ export class ListingsService {
     page: number = 1,
     limit: number = 10,
     category?: string,
-    search?: string
+    search?: string,
+    sort?: string,
+    minPrice?: number,
+    maxPrice?: number
   ): Promise<{ listings: Listing[]; total: number }> {
     const skip = (page - 1) * limit;
 
@@ -41,8 +44,14 @@ export class ListingsService {
       status: ListingStatus.ACTIVE,
     };
 
-    if (category) {
+    if (category && category !== "all") {
       where.category = category;
+    }
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price_bc = {};
+      if (minPrice !== undefined) where.price_bc.gte = minPrice;
+      if (maxPrice !== undefined) where.price_bc.lte = maxPrice;
     }
 
     if (search) {
@@ -51,6 +60,15 @@ export class ListingsService {
         { description: { contains: search, mode: "insensitive" } },
       ];
     }
+
+    const orderBy =
+      sort === "price-asc"
+        ? { price_bc: "asc" as const }
+        : sort === "price-desc"
+          ? { price_bc: "desc" as const }
+          : sort === "category"
+            ? [{ category: "asc" as const }, { title: "asc" as const }]
+            : { created_at: "desc" as const };
 
     const [listings, total] = await Promise.all([
       prisma.listing.findMany({
@@ -67,7 +85,7 @@ export class ListingsService {
         },
         skip,
         take: limit,
-        orderBy: { created_at: "desc" },
+        orderBy,
       }),
       prisma.listing.count({ where }),
     ]);

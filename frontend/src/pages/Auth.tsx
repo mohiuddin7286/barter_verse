@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, Lock, Mail, User, ShieldCheck, Sparkles } from 'lucide-react';
+import { GOOGLE_CLIENT_ID, loadGoogleIdentityScript } from '@/lib/google';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -21,7 +22,8 @@ type AuthFormData = z.infer<typeof authSchema>;
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
+  const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -39,6 +41,59 @@ export default function Auth() {
       navigate('/');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || !googleButtonRef.current) return;
+
+    let cancelled = false;
+
+    loadGoogleIdentityScript()
+      .then(() => {
+        if (cancelled || !googleButtonRef.current || !window.google) return;
+
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: async ({ credential }) => {
+            if (!credential) {
+              toast({
+                title: 'Google Login Failed',
+                description: 'Google did not return a credential.',
+                variant: 'destructive',
+              });
+              return;
+            }
+
+            const { error } = await signInWithGoogle(credential);
+            if (error) {
+              toast({ title: 'Google Login Failed', description: error.message, variant: 'destructive' });
+            } else {
+              toast({ title: 'Success', description: 'Signed in with Google.' });
+              navigate('/');
+            }
+          },
+        });
+
+        googleButtonRef.current.innerHTML = '';
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: 384,
+          text: 'continue_with',
+          shape: 'pill',
+        });
+      })
+      .catch(() => {
+        toast({
+          title: 'Google Login Unavailable',
+          description: 'Could not load Google sign-in.',
+          variant: 'destructive',
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, signInWithGoogle, toast]);
 
   const handleLogin = async (data: AuthFormData) => {
     setIsLoading(true);
@@ -178,6 +233,20 @@ export default function Auth() {
                   </form>
                 </TabsContent>
               </Tabs>
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                  <span>or</span>
+                  <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                </div>
+                {GOOGLE_CLIENT_ID ? (
+                  <div ref={googleButtonRef} className="flex justify-center" />
+                ) : (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+                    Add VITE_GOOGLE_CLIENT_ID to enable Google login.
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
           

@@ -27,8 +27,8 @@ export default function Explore() {
    const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [viewMode, setViewMode] = useState<'grid' | 'list'>((searchParams.get('view') as 'grid' | 'list') || 'grid');
-   const [sortBy, setSortBy] = useState<'relevance' | 'price-asc' | 'price-desc' | 'newest'>(
-      (searchParams.get('sort') as 'relevance' | 'price-asc' | 'price-desc' | 'newest') || 'relevance'
+   const [sortBy, setSortBy] = useState<'relevance' | 'category' | 'price-asc' | 'price-desc' | 'newest'>(
+      (searchParams.get('sort') as 'relevance' | 'category' | 'price-asc' | 'price-desc' | 'newest') || 'relevance'
    );
   
    // Advanced Filter States
@@ -111,8 +111,25 @@ export default function Explore() {
          const bTime = b.createdAt ? Date.parse(b.createdAt) : 0;
          return bTime - aTime;
       }
+      if (sortBy === 'category') {
+         const categoryCompare = (a.category || '').localeCompare(b.category || '');
+         if (categoryCompare !== 0) return categoryCompare;
+         return a.title.localeCompare(b.title);
+      }
       return 0; // relevance/default keeps original order
    });
+
+   const handleCategorySelect = (categoryId: string) => {
+      setSelectedCategory(categoryId);
+      if (window.innerWidth < 1024) {
+         setShowFilters(false);
+      }
+      toast.message(categoryId === 'all' ? 'Showing all categories' : `Filtering ${categoryId}`);
+   };
+
+   const handleToggleFilters = () => {
+      setShowFilters((current) => !current);
+   };
 
    const handleApplyFilters = () => {
       setShowFilters(false);
@@ -159,7 +176,7 @@ export default function Explore() {
         </div>
 
         {/* 2. Control Bar (Search & Toggles) */}
-      <div className="sticky top-20 z-30 glass-panel p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col md:flex-row gap-3">
+      <div className="glass-panel p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col md:flex-row gap-3">
            <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 dark:text-slate-400" />
               <input
@@ -173,7 +190,7 @@ export default function Explore() {
            
            <div className="flex items-center gap-2">
               <Button 
-                 onClick={() => setShowFilters(!showFilters)}
+                 onClick={handleToggleFilters}
                  variant="outline" 
                  className={`h-12 px-4 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 ${showFilters ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : ''}`}
               >
@@ -201,11 +218,30 @@ export default function Explore() {
                         className="h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3 text-sm focus:outline-none focus:border-emerald-500/50"
               >
                         <option value="relevance">Sort: Relevance</option>
+                        <option value="category">Category</option>
                         <option value="newest">Newest First</option>
                         <option value="price-asc">Price: Low to High</option>
                         <option value="price-desc">Price: High to Low</option>
               </select>
            </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => handleCategorySelect(cat.id)}
+              className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all ${
+                selectedCategory === cat.id
+                  ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-500'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-500/40 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white'
+              }`}
+            >
+              {cat.icon}
+              {cat.label}
+            </button>
+          ))}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -221,7 +257,7 @@ export default function Explore() {
                        {CATEGORIES.map(cat => (
                           <button
                              key={cat.id}
-                             onClick={() => setSelectedCategory(cat.id)}
+                             onClick={() => handleCategorySelect(cat.id)}
                              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 selectedCategory === cat.id 
                                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 

@@ -1,17 +1,21 @@
 ﻿import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, Star, Zap, Clock, ShieldCheck, Search, Filter, X } from 'lucide-react';
+import { Calendar, Star, Zap, Clock, ShieldCheck, Search, Filter, Video, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
+import { GOOGLE_CLIENT_ID, requestGoogleCalendarAccessToken } from '@/lib/google';
 
 const skills = [
   {
     id: 1,
     title: 'Web Development',
-    provider: 'Ammar',
+    provider: 'User 2',
+    providerEmail: 'user2@example.com',
     rating: 4.8,
     available: true,
     category: 'Tech',
@@ -20,7 +24,8 @@ const skills = [
   {
     id: 2,
     title: 'Graphic Design',
-    provider: 'Priya',
+    provider: 'User 3',
+    providerEmail: 'user3@example.com',
     rating: 4.9,
     available: true,
     category: 'Design',
@@ -29,7 +34,8 @@ const skills = [
   {
     id: 3,
     title: 'Language Tutoring',
-    provider: 'Rahul',
+    provider: 'User 4',
+    providerEmail: 'user4@example.com',
     rating: 4.7,
     available: false,
     category: 'Education',
@@ -38,7 +44,8 @@ const skills = [
   {
     id: 4,
     title: 'Music Lessons',
-    provider: 'Siddu',
+    provider: 'User 5',
+    providerEmail: 'user5@example.com',
     rating: 5.0,
     available: true,
     category: 'Arts',
@@ -47,12 +54,15 @@ const skills = [
 ];
 
 export default function SkillShare() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [availableOnly, setAvailableOnly] = useState(false);
   const [bookingModal, setBookingModal] = useState<{ open: boolean; skill: typeof skills[number] | null }>({ open: false, skill: null });
   const [scheduledAt, setScheduledAt] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdSession, setCreatedSession] = useState<any | null>(null);
+  const [bookingError, setBookingError] = useState('');
 
   const handleFilterClick = () => {
     setAvailableOnly(!availableOnly);
@@ -61,42 +71,63 @@ export default function SkillShare() {
 
   const handleBook = (skill: typeof skills[number]) => {
     if (!skill.available) return;
+    setCreatedSession(null);
+    setBookingError('');
+    setScheduledAt('');
+    setDurationMinutes(60);
     setBookingModal({ open: true, skill });
   };
 
   const handleBookingSubmit = async () => {
-    if (!bookingModal.skill || !scheduledAt) {
-      toast.error('Please select a date and time');
+    setBookingError('');
+
+    if (!user) {
+      const message = 'Please sign in before booking a session';
+      setBookingError(message);
+      toast.error(message);
       return;
     }
 
+    if (!bookingModal.skill || !scheduledAt) {
+      const message = 'Please select a date and time';
+      setBookingError(message);
+      toast.error(message);
+      return;
+    }
+
+    const selectedDate = new Date(scheduledAt);
+    if (Number.isNaN(selectedDate.getTime()) || selectedDate <= new Date()) {
+      const message = 'Please choose a future date and time';
+      setBookingError(message);
+      toast.error(message);
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-      const response = await fetch('/api/sessions/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
-        },
-        body: JSON.stringify({
-          skill_title: bookingModal.skill.title,
-          participant_id: 'current_user_id', // Would be actual user ID from auth
-          scheduled_at: scheduledAt,
-          duration_minutes: durationMinutes,
-        }),
+      if (!GOOGLE_CLIENT_ID) {
+        throw new Error('Add VITE_GOOGLE_CLIENT_ID to create real Google Meet links');
+      }
+
+      const googleAccessToken = await requestGoogleCalendarAccessToken();
+      const response = await api.createSession({
+        provider_email: bookingModal.skill.providerEmail,
+        skill_title: bookingModal.skill.title,
+        description: `Google Meet session for ${bookingModal.skill.title} with ${bookingModal.skill.provider}`,
+        scheduled_at: new Date(scheduledAt).toISOString(),
+        duration_minutes: durationMinutes,
+        location: 'Google Meet',
+        google_access_token: googleAccessToken,
       });
 
-      const result = await response.json();
-      if (result.success) {
-        toast.success(`Booked session with ${bookingModal.skill.provider}!`);
-        setBookingModal({ open: false, skill: null });
-        setScheduledAt('');
-        setDurationMinutes(60);
-      } else {
-        toast.error(`Error: ${result.message}`);
-      }
+      const session = response.data.data;
+      setCreatedSession(session);
+      toast.success('Session booked with Google Meet link');
     } catch (error: any) {
-      toast.error(`Booking failed: ${error.message}`);
+      const message = error.response?.data?.message || error.response?.data?.error || error.message || 'Could not book this session. Make sure the backend is running.';
+      setBookingError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -229,12 +260,43 @@ export default function SkillShare() {
         </div>
 
         {/* Booking Modal */}
-        <Dialog open={bookingModal.open} onOpenChange={(open) => setBookingModal({ ...bookingModal, open })}>
+        <Dialog
+          open={bookingModal.open}
+          onOpenChange={(open) => {
+            setBookingModal({ ...bookingModal, open });
+            if (!open) {
+              setCreatedSession(null);
+              setBookingError('');
+            }
+          }}
+        >
           <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl">Book Session with {bookingModal.skill?.provider}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              {createdSession?.meeting_link && (
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-emerald-600 dark:text-emerald-300">
+                    <Video className="w-4 h-4" />
+                    Google Meet is ready for this session
+                  </div>
+                  <a
+                    href={createdSession.meeting_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
+                  >
+                    Open Google Meet
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              )}
+              {bookingError && !createdSession && (
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-300">
+                  {bookingError}
+                </div>
+              )}
               <div>
                 <label className="text-sm text-slate-600 dark:text-slate-400 block mb-2">Skill</label>
                 <input
@@ -250,6 +312,7 @@ export default function SkillShare() {
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
+                  disabled={!!createdSession}
                   className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
@@ -261,6 +324,7 @@ export default function SkillShare() {
                   max="240"
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Math.max(30, Math.min(240, parseInt(e.target.value) || 60)))}
+                  disabled={!!createdSession}
                   className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
@@ -268,17 +332,24 @@ export default function SkillShare() {
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setBookingModal({ open: false, skill: null })}
+                  onClick={() => {
+                    setBookingModal({ open: false, skill: null });
+                    setCreatedSession(null);
+                    setBookingError('');
+                  }}
                 >
-                  Cancel
+                  {createdSession ? 'Close' : 'Cancel'}
                 </Button>
-                <Button
-                  onClick={handleBookingSubmit}
-                  disabled={isSubmitting}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white"
-                >
-                  {isSubmitting ? 'Booking...' : 'Confirm Booking'}
-                </Button>
+                {!createdSession && (
+                  <Button
+                    type="button"
+                    onClick={handleBookingSubmit}
+                    disabled={isSubmitting}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white"
+                  >
+                    {isSubmitting ? 'Booking...' : 'Confirm Booking'}
+                  </Button>
+                )}
               </div>
             </div>
           </DialogContent>

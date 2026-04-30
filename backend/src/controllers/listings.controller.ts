@@ -36,12 +36,22 @@ export class ListingsController {
       const limit = parseInt(req.query.limit as string) || 10;
       const category = req.query.category as string | undefined;
       const search = req.query.search as string | undefined;
+      const sort = req.query.sort as string | undefined;
+      const minPrice = req.query.minPrice !== undefined
+        ? Number.parseInt(req.query.minPrice as string, 10)
+        : undefined;
+      const maxPrice = req.query.maxPrice !== undefined
+        ? Number.parseInt(req.query.maxPrice as string, 10)
+        : undefined;
 
       const { listings, total } = await listingsService.getListings(
         page,
         limit,
         category,
-        search
+        search,
+        sort,
+        Number.isFinite(minPrice) ? minPrice : undefined,
+        Number.isFinite(maxPrice) ? maxPrice : undefined
       );
 
       res.status(200).json({
